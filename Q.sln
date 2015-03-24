@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Q.iOS", "iOS\Q.iOS.fsproj", "{C548936E-1F5A-41CC-B6AD-6146E9DD52EA}"
 EndProject
-Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "qlib", "qlib\qlib.fsproj", "{F90A5C1A-A41D-4D38-81A7-FD6DB7D9E712}"
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "qlib", "lib\qlib.fsproj", "{F90A5C1A-A41D-4D38-81A7-FD6DB7D9E712}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
