@@ -28,7 +28,9 @@
     <Reference Include="System.Core" />
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
-    <Reference Include="Xamarin.iOS" />
+    <Reference Include="Xamarin.iOS">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="SQLite">
       <HintPath>..\Components\sqlite-net-1.0.8.3\lib\ios-unified\SQLite.dll</HintPath>
     </Reference>
