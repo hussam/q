@@ -88,6 +88,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoLayout.fs" />
+    <Compile Include="Utilities.fs" />
+    <Compile Include="Settings.fs" />
+    <Compile Include="Controls.fs" />
+    <Compile Include="NewItemViewController.fs" />
     <Compile Include="MainViewController.fs" />
     <Compile Include="AppDelegate.fs" />
   </ItemGroup>
