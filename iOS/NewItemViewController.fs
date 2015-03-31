@@ -113,9 +113,19 @@ type NewItemViewController =
             venue.Placeholder <- "...(optional)"
             venue.BecomeFirstResponder() |> ignore
 
+            let save = new UIButton()
+            let saveBtnWidth = nfloat 160.0
+            save.SetTitle("SAVE IT!", UIControlState.Normal)
+            save.SetTitleColor(UIColor.Black, UIControlState.Normal)
+            save.Font <- UIFont.FromName(Settings.StyledFontNameBoldItalic, nfloat 24.0)
+            save.BackgroundColor <- this.highlightColor
+            save.TranslatesAutoresizingMaskIntoConstraints <- false
+            save.TouchUpInside.Add(fun x -> let alert = new UIAlertView("Clicked", "Clicked", null, "OK") in alert.Show())
+
             view.AddSubview(hashtag)
             view.AddSubview(at)
             view.AddSubview(venue)
+            view.AddSubview(save)
 
             view.AddConstraints [|
                 hashtag.LayoutLeft == view.LayoutLeft + nfloat 10.0
@@ -125,6 +135,9 @@ type NewItemViewController =
                 venue.LayoutTop == hashtag.LayoutBottom + nfloat 5.0
                 venue.LayoutLeft == at.LayoutRight + nfloat 5.0
                 venue.LayoutRight == view.LayoutRight
+                save.LayoutTop == venue.LayoutBottom + nfloat 100.0
+                save.LayoutRight == view.LayoutRight
+                save.LayoutLeft == view.LayoutRight - saveBtnWidth
             |]
         )
 
