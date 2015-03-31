@@ -28,20 +28,20 @@ type HashtagCell =
         |]
 
 
-type HashtagSource(hashtagTitles) =
+type HashtagSource(hashtagTitles, onSelected) =
     inherit UICollectionViewSource()
 
     let titles : string[] = hashtagTitles
+    let itemSelected = new Event<_>()
 
     override this.GetItemsCount(collectionView, section) = nint titles.Length
+
+    override this.ItemSelected(collectionView, indexPath) = onSelected(titles.[indexPath.Row])
 
     override this.GetCell(collectionView, indexPath) =
         let cell = collectionView.DequeueReusableCell("hashtagCell", indexPath) :?> HashtagCell
         cell.Title <- titles.[indexPath.Row]
         cell :> UICollectionViewCell
-
-    override this.ItemSelected(collectionView, indexPath) =
-        Console.WriteLine(titles.[indexPath.Row])
 
 
 type HashtagCollectionView() as this =
@@ -83,10 +83,12 @@ type NewItemViewController =
     override this.ViewDidLoad() =
         base.ViewDidLoad()
 
+        let view = this.View
+        view.BackgroundColor <- UIColor.White
+
         let prompt = new StyledLabel(Settings.StyledFontNameItalic, 24)
         prompt.Text <- " REMIND ME TO GO FOR A "
         prompt.BackgroundColor <- this.highlightColor
-        prompt.TranslatesAutoresizingMaskIntoConstraints <- false
 
         let dismiss = new UIButton()
         dismiss.SetTitle("X", UIControlState.Normal)
@@ -97,12 +99,35 @@ type NewItemViewController =
 
         let hashtags = [| "Coffee"; "Beer"; "Drinks"; "Brunch"; "Lunch"; "Dinner"; "Movie"; "Walk"; |]
         let hashtagsGrid = new HashtagCollectionView()
-        hashtagsGrid.Source <- new HashtagSource(hashtags)
         hashtagsGrid.TranslatesAutoresizingMaskIntoConstraints <- false
+        hashtagsGrid.Source <- new HashtagSource(hashtags, fun selectedTitle ->
+            hashtagsGrid.RemoveFromSuperview()
 
+            let hashtag = new StyledLabel(Settings.StyledFontNameBoldItalic, 28)
+            hashtag.Text <- selectedTitle.ToUpper()
+            hashtag.BackgroundColor <- NewItemViewController.hashtagColor
 
-        let view = this.View
-        view.BackgroundColor <- UIColor.White
+            let at = new StyledLabel(Settings.StyledFontNameBold, 20, Text = "at")
+
+            let venue = new StyledTextField(24, this.highlightColor)
+            venue.Placeholder <- "...(optional)"
+            venue.BecomeFirstResponder() |> ignore
+
+            view.AddSubview(hashtag)
+            view.AddSubview(at)
+            view.AddSubview(venue)
+
+            view.AddConstraints [|
+                hashtag.LayoutLeft == view.LayoutLeft + nfloat 10.0
+                hashtag.LayoutTop == prompt.LayoutBottom + nfloat 10.0
+                at.LayoutLeft == hashtag.LayoutLeft + nfloat 10.0
+                at.LayoutBottom == venue.LayoutBottom
+                venue.LayoutTop == hashtag.LayoutBottom + nfloat 5.0
+                venue.LayoutLeft == at.LayoutRight + nfloat 5.0
+                venue.LayoutRight == view.LayoutRight
+            |]
+        )
+
         view.AddSubview(prompt)
         view.AddSubview(dismiss)
         view.AddSubview(hashtagsGrid)
@@ -117,5 +142,3 @@ type NewItemViewController =
             hashtagsGrid.LayoutTop == prompt.LayoutBottom + nfloat 20.0
             hashtagsGrid.LayoutBottom == view.LayoutBottom
         |]
-
-

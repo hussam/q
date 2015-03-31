@@ -15,9 +15,10 @@ type StyledLabel(?fontName : string, ?fontSize : int) as this =
                     | None -> Settings.StyledFontName
 
         this.Font <- UIFont.FromName(name, size)
+        this.TranslatesAutoresizingMaskIntoConstraints <- false
 
 
-type StyledTextField(?fontSize : nfloat, ?tintColor : UIColor) as this =
+type StyledTextField(?fontSize : int, ?tintColor : UIColor) as this =
     inherit UITextField()
 
     do
@@ -25,10 +26,12 @@ type StyledTextField(?fontSize : nfloat, ?tintColor : UIColor) as this =
         this.KeyboardType <- UIKeyboardType.ASCIICapable
 
         let fsize = match fontSize with
-                    | Some size -> size
+                    | Some size -> nfloat (float size)
                     | None -> this.Font.PointSize
-        this.Font <- UIFont.FromName(Settings.StyledFontName, fsize)
+        this.Font <- UIFont.FromName(Settings.StyledFontNameBold, fsize)
 
         match tintColor with
         | Some tint -> this.TintColor <- tint
         | None -> ()
+
+        this.TranslatesAutoresizingMaskIntoConstraints <- false
