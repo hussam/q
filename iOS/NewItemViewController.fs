@@ -132,9 +132,9 @@ type NewItemViewController =
                 hashtag.LayoutLeft == view.LayoutLeft + nfloat 10.0
                 hashtag.LayoutTop == prompt.LayoutBottom + nfloat 10.0
                 at.LayoutLeft == hashtag.LayoutLeft + nfloat 10.0
-                at.LayoutBottom == venue.LayoutBottom
+                at.LayoutCenterY == venue.LayoutCenterY
                 venue.LayoutTop == hashtag.LayoutBottom + nfloat 5.0
-                venue.LayoutLeft == at.LayoutRight + nfloat 5.0
+                venue.LayoutLeft == at.LayoutRight + nfloat 10.0
                 venue.LayoutRight == view.LayoutRight
                 save.LayoutTop == venue.LayoutBottom + nfloat 100.0
                 save.LayoutRight == view.LayoutRight
