@@ -87,7 +87,7 @@ type NewItemViewController =
         view.BackgroundColor <- UIColor.White
 
         let prompt = new StyledLabel(Settings.StyledFontNameItalic, 24)
-        prompt.Text <- " REMIND ME TO GO FOR A "
+        prompt.Text <- " REMIND ME TO GO FOR "
         prompt.BackgroundColor <- this.highlightColor
 
         let dismiss = new UIButton()
