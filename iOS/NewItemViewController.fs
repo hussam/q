@@ -65,8 +65,8 @@ type HashtagCollectionView() as this =
 type NewItemViewController = 
     inherit UIViewController
 
-    //static member private colors = [ UIColor.Aqua; UIColor.Blue; UIColor.Fuchsia; UIColor.MidGreen; UIColor.Lime; UIColor.Maroon; UIColor.Navy; UIColor.Olive; UIColor.Pink; UIColor.MidPurple; UIColor.Red; UIColor.Teal; UIColor.Yellow ]
-    static member private colors = QColors
+    static member private colors = [| UIColor.Aqua; UIColor.Blue; UIColor.Fuchsia; UIColor.MidGreen; UIColor.Lime; UIColor.Maroon; UIColor.Navy; UIColor.Olive; UIColor.Pink; UIColor.MidPurple; UIColor.Red; UIColor.Teal; UIColor.Yellow |]
+    //static member private colors = QColors
     static member private hashtagColor = UIColor.FromRGB(255, 211, 0)
 
     val private highlightColor : UIColor
@@ -77,7 +77,7 @@ type NewItemViewController =
 
         {
             inherit UIViewController()
-            highlightColor = colors.[random.Next colors.Length].WithSaturation(nfloat 0.8).ColorWithAlpha(nfloat 0.5)
+            highlightColor = colors.[random.Next colors.Length].WithLightness(nfloat 0.75)
         }    
 
     override this.ViewDidLoad() =
@@ -92,7 +92,7 @@ type NewItemViewController =
 
         let dismiss = new UIButton()
         dismiss.SetTitle("X", UIControlState.Normal)
-        dismiss.SetTitleColor(this.highlightColor, UIControlState.Normal)
+        dismiss.SetTitleColor(this.highlightColor.WithLightness(nfloat 0.2).WithHSLSaturation(nfloat 0.5), UIControlState.Normal)
         dismiss.Font <- UIFont.FromName(Settings.StyledFontNameBold, nfloat (float 24))
         dismiss.TouchUpInside.Add(fun x -> this.DismissViewController(true, null) )
         dismiss.TranslatesAutoresizingMaskIntoConstraints <- false

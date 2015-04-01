@@ -1,5 +1,6 @@
 ﻿module Utilites
 
+open System
 open UIKit
 
 type UIColor with
@@ -24,12 +25,31 @@ type UIColor with
     static member QLime = UIColor.FromRGB(214, 223, 35)
 
     member this.WithBrightness brightness =
-        let h, s, b, a = this.GetHSBA ()
+        let h, s, _, a = this.GetHSBA ()
         UIColor.FromHSBA(h, s, brightness, a)
 
-    member this.WithSaturation saturation = 
-        let h, s, b, a = this.GetHSBA ()
+    member this.WithHSBSaturation saturation = 
+        let h, _s, b, a = this.GetHSBA ()
         UIColor.FromHSBA(h, saturation, b, a)
+
+    member this.GetHSLA () =
+        let h, s_hsb, b, a = this.GetHSBA()
+        let l = (nfloat 0.5) * b * (nfloat 2.0 - s_hsb)
+        let s_hsl = b * s_hsb / nfloat (1.0 - Math.Abs((2.0 * (float l)) - 1.0))
+        (h, s_hsl, l, a)
+
+    static member FromHSLA (hue, saturation, lightness, alpha) =
+        let b = nfloat 2.0 * saturation * nfloat (1.0 - Math.Abs((2.0 * (float lightness)) - 1.0))
+        let s_hsb = (nfloat 2.0) * (b - lightness) / b
+        UIColor.FromHSBA(hue, s_hsb, b, alpha)
+
+    member this.WithLightness lightness =
+        let h, s, _, a = this.GetHSLA()
+        UIColor.FromHSLA(h, s, lightness, a)
+
+    member this.WithHSLSaturation saturation =
+        let h, _, l, a = this.GetHSLA()
+        UIColor.FromHSLA(h, saturation, l, a)
 
 
 let QColors = [| UIColor.QBlue ; UIColor.QYellow ; UIColor.QSalmon ; UIColor.QMagenta ; UIColor.QGreen ; UIColor.QLime |]
