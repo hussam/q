@@ -111,6 +111,7 @@ type NewItemViewController =
 
             let venue = new StyledTextField(24, this.highlightColor)
             venue.Placeholder <- "...(optional)"
+            venue.AutocapitalizationType <- UITextAutocapitalizationType.AllCharacters
             venue.BecomeFirstResponder() |> ignore
 
             let save = new UIButton()
