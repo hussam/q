@@ -109,11 +109,38 @@ type NewItemViewController =
 
             let at = new StyledLabel(Settings.StyledFontNameBold, 20, Text = "at")
 
+            let maxLength = 20
+            let counter = new StyledLabel(Settings.StyledFontNameBold, 24)
+            counter.Text <- maxLength.ToString()
+
             let venue = new StyledTextField(24, this.highlightColor)
             venue.Placeholder <- "...(optional)"
             venue.AutocapitalizationType <- UITextAutocapitalizationType.AllCharacters
             venue.ReturnKeyType <- UIReturnKeyType.Done
             venue.BecomeFirstResponder() |> ignore
+            venue.ShouldChangeCharacters <- new UITextFieldChange(fun x range str ->
+                // prevent crashing undo bug
+                if range.Length + range.Location > nint venue.Text.Length
+                then
+                    false
+                else
+                    let remainingCharacters = maxLength - (venue.Text.Length + str.Length - (int range.Length))   /// subtracting range length in case of replacement
+                    if remainingCharacters < 0
+                    then
+                        false
+                    else
+                        if remainingCharacters > 5
+                        then
+                            counter.TextColor <- UIColor.Black
+                            counter.BackgroundColor <- UIColor.White
+                        else
+                            counter.TextColor <- UIColor.White
+                            counter.BackgroundColor <- UIColor.Red.WithBrightness(nfloat 0.65)
+
+                        counter.Text <- remainingCharacters.ToString()
+                        true
+                )
+
 
             let save = new UIButton()
             let saveBtnWidth = nfloat 160.0
@@ -127,6 +154,7 @@ type NewItemViewController =
             view.AddSubview(hashtag)
             view.AddSubview(at)
             view.AddSubview(venue)
+            view.AddSubview(counter)
             view.AddSubview(save)
 
             view.AddConstraints [|
@@ -136,7 +164,9 @@ type NewItemViewController =
                 at.LayoutCenterY == venue.LayoutCenterY
                 venue.LayoutTop == hashtag.LayoutBottom + nfloat 5.0
                 venue.LayoutLeft == at.LayoutRight + nfloat 10.0
-                venue.LayoutRight == view.LayoutRight
+                counter.LayoutRight == view.LayoutRight
+                counter.LayoutCenterY == venue.LayoutCenterY
+                venue.LayoutRight == counter.LayoutLeft - nfloat 5.0
                 save.LayoutTop == venue.LayoutBottom + nfloat 100.0
                 save.LayoutRight == view.LayoutRight
                 save.LayoutLeft == view.LayoutRight - saveBtnWidth
