@@ -76,6 +76,9 @@
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
     <Reference Include="Xamarin.iOS" />
+    <Reference Include="SQLite">
+      <HintPath>..\Components\sqlite-net-1.0.8.3\lib\ios-unified\SQLite.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\AppIcon%402x.png" />
@@ -98,5 +101,17 @@
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.FSharp.targets" />
   <ItemGroup>
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lib\qlib.fsproj">
+      <Project>{F90A5C1A-A41D-4D38-81A7-FD6DB7D9E712}</Project>
+      <Name>qlib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <XamarinComponentReference Include="sqlite-net">
+      <Version>1.0.8.3</Version>
+      <Visible>False</Visible>
+    </XamarinComponentReference>
   </ItemGroup>
 </Project>

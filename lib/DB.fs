@@ -14,6 +14,7 @@ type QItem() =
     member val Text : string = null with get, set
     member val Topic : string = null with get, set
 
+[<AllowNullLiteral>]
 type QItemDB(path) =
     inherit SQLiteAsyncConnection(path)
 

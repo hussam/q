@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="DB.fs" />
+    <Compile Include="QLib.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.FSharp.targets" />
   <ItemGroup>

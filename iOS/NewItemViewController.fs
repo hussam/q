@@ -8,6 +8,8 @@ open CoreGraphics
 open Utilites
 open Praeclarum.AutoLayout
 
+open qlib
+
 
 type TopicCell =
     inherit UICollectionViewCell
@@ -151,7 +153,11 @@ type NewItemViewController =
             save.Font <- UIFont.FromName(Settings.StyledFontNameBoldItalic, nfloat 24.0)
             save.BackgroundColor <- this.highlightColor
             save.TranslatesAutoresizingMaskIntoConstraints <- false
-            save.TouchUpInside.Add(fun x -> let alert = new UIAlertView("Clicked", "Clicked", null, "OK") in alert.Show())
+            save.TouchUpInside.Add(fun _ ->
+                QLib.SaveItem(new QItem(Text = venue.Text, Topic = topic.Text)) |> ignore
+                venue.ResignFirstResponder() |> ignore
+                this.DismissViewController(true, null)
+                )
 
             view.AddSubview(topic)
             view.AddSubview(at)
