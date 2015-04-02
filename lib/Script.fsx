@@ -19,7 +19,7 @@ let mutable q = new QItem()
 db.SaveItem(q) |> ignore
 
 q.Text <- "Some activitiy"
-q.Hashtag <- "Testing"
+q.Topic <- "Testing"
 db.SaveItem(q)
 
 let x = nfloat 32.0f

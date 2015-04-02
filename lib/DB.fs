@@ -12,9 +12,7 @@ type DBItem() =
 type QItem() =
     inherit DBItem()
     member val Text : string = null with get, set
-    member val Hashtag : string = null with get, set
-    member val VenueId : string = null with get, set
-    member val PhotoUrl : string = null with get, set
+    member val Topic : string = null with get, set
 
 type QItemDB(path) =
     inherit SQLiteAsyncConnection(path)
