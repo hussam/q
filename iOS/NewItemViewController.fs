@@ -101,10 +101,9 @@ type NewItemViewController =
         dismiss.TouchUpInside.Add(fun x -> this.DismissViewController(true, null) )
         dismiss.TranslatesAutoresizingMaskIntoConstraints <- false
 
-        let topics = [| "Coffee"; "Beer"; "Drinks"; "Brunch"; "Lunch"; "Dinner"; "Movie"; "Walk"; |]
         let topicsGrid = new TopicsCollectionView()
         topicsGrid.TranslatesAutoresizingMaskIntoConstraints <- false
-        topicsGrid.Source <- new TopicsCollectionSource(topics, fun selectedTitle ->
+        topicsGrid.Source <- new TopicsCollectionSource(QLib.Topics, fun selectedTitle ->
             topicsGrid.RemoveFromSuperview()
 
             let topic = new StyledLabel(Settings.StyledFontNameBoldItalic, 28)

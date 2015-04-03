@@ -22,3 +22,5 @@ module QLib =
         match qdb with
         | Some db -> db.GetItems() |> Async.RunSynchronously
         | None -> new System.Collections.Generic.List<QItem>()
+
+    let Topics = [| "Coffee"; "Beer"; "Drinks"; "Brunch"; "Lunch"; "Dinner"; "Movie"; "Walk"; |]
