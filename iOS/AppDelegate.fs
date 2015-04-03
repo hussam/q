@@ -24,14 +24,10 @@ type AppDelegate() =
         QLib.Init(appSupportDir) |> ignore
         true
 
-
     // This method is invoked when the application is ready to run.
     override this.FinishedLaunching(app, options) = 
         this.Window <- new UIWindow(UIScreen.MainScreen.Bounds)
-        let viewController = new MainViewController()
-        viewController.View.BackgroundColor <- UIColor.White
-        let navController = new UINavigationController(viewController)
-        this.Window.RootViewController <- navController
+        this.Window.RootViewController <- new UINavigationController(new HomeViewController())
         this.Window.MakeKeyAndVisible()
         true
 

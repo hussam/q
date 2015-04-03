@@ -25,13 +25,11 @@ type QueueCell =
 type QueueViewSource(tableView : UITableView) =
     inherit UITableViewSource()
 
-    let queue = QLib.GetQueueView()
     let tv = tableView
+    let queue = QLib.GetQueueView()
 
-    do
-        queue.CollectionChanged.Add(fun _ -> tv.ReloadData())
+    do queue.CollectionChanged.Add(fun _ -> tv.ReloadData())
 
-    
     override this.RowsInSection(tableView, section) = nint queue.Count
     override this.GetCell(tableView, indexPath) =
         let cell = tableView.DequeueReusableCell (QueueCell.ReuseId, indexPath) :?> QueueCell
@@ -39,8 +37,7 @@ type QueueViewSource(tableView : UITableView) =
         cell :> UITableViewCell
 
 
-[<Register("MainViewController")>]
-type MainViewController() as this = 
+type HomeViewController() as this = 
     inherit UITableViewController()
     do
         this.Title <- "My Queue"
@@ -49,17 +46,9 @@ type MainViewController() as this =
             this.PresentViewController(c, true, null))
         this.NavigationItem.SetRightBarButtonItem(addBtn, false)
 
-    // Release any cached data, images, etc that aren't in use.
-    override this.DidReceiveMemoryWarning() = base.DidReceiveMemoryWarning()
-
-    // Perform any additional setup after loading the view, typically from a nib.
+    // Perform any additional setup after loading the view
     override this.ViewDidLoad() =
         base.ViewDidLoad()
         let tv = this.TableView
         tv.RegisterClassForCellReuse(Operators.typeof<QueueCell>, QueueCell.ReuseId)
         tv.Source <- new QueueViewSource(tv)
-
-    // Return true for supported orientations
-    override this.ShouldAutorotateToInterfaceOrientation(orientation) = 
-        orientation <> UIInterfaceOrientation.PortraitUpsideDown
-
