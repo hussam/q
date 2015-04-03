@@ -22,11 +22,16 @@ type QueueCell =
         this.DetailTextLabel.Text <- item.Topic
 
 
-type QueueViewSource() =
+type QueueViewSource(tableView : UITableView) =
     inherit UITableViewSource()
 
     let queue = QLib.GetQueueView()
+    let tv = tableView
 
+    do
+        queue.CollectionChanged.Add(fun _ -> tv.ReloadData())
+
+    
     override this.RowsInSection(tableView, section) = nint queue.Count
     override this.GetCell(tableView, indexPath) =
         let cell = tableView.DequeueReusableCell (QueueCell.ReuseId, indexPath) :?> QueueCell
@@ -39,7 +44,7 @@ type QueueView(frame) as this =
     do
         //this.TranslatesAutoresizingMaskIntoConstraints <- false
         this.RegisterClassForCellReuse(Operators.typeof<QueueCell>, QueueCell.ReuseId)
-        this.Source <- new QueueViewSource()
+        this.Source <- new QueueViewSource(this)
 
 
 
@@ -73,13 +78,6 @@ type MainViewController() as this =
                     | Some qv -> qv
                            
         view.AddSubview(qView)
-
-
-    override this.ViewWillAppear(animated) =
-        base.ViewWillAppear(animated)
-        match queueView with
-        | None -> ()
-        | Some qv -> qv.ReloadData()
 
 
     // Return true for supported orientations

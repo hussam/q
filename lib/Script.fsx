@@ -1,6 +1,7 @@
 ﻿#I "/Users/hussam/projects/q/lib/bin/Debug/"
 #r "Xamarin.iOS.dll"
 #r "SQLite.dll"
+#load "Utils.fs"
 #load "DB.fs"
 
 open qlib
