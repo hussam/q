@@ -98,7 +98,7 @@ type NewItemViewController =
         dismiss.SetTitle("X", UIControlState.Normal)
         dismiss.SetTitleColor(this.highlightColor.WithLightness(nfloat 0.2).WithHSLSaturation(nfloat 0.5), UIControlState.Normal)
         dismiss.Font <- UIFont.FromName(Settings.StyledFontNameBold, nfloat (float 24))
-        dismiss.TouchUpInside.Add(fun x -> this.DismissViewController(true, null) )
+        dismiss.TouchUpInside.Add(fun _ -> this.View.EndEditing(true) |> ignore; this.DismissViewController(true, null) )
         dismiss.TranslatesAutoresizingMaskIntoConstraints <- false
 
         let topicsGrid = new TopicsCollectionView()
