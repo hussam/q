@@ -17,3 +17,8 @@ module QLib =
             db.SaveItem(item) |> Async.RunSynchronously |> ignore
             true
         | None -> false
+
+    let GetQueueView () =
+        match qdb with
+        | Some db -> db.GetItems() |> Async.RunSynchronously
+        | None -> new System.Collections.Generic.List<QItem>()
