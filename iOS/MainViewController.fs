@@ -39,22 +39,9 @@ type QueueViewSource(tableView : UITableView) =
         cell :> UITableViewCell
 
 
-type QueueView(frame) as this =
-    inherit UITableView(frame, UITableViewStyle.Plain)
-    do
-        //this.TranslatesAutoresizingMaskIntoConstraints <- false
-        this.RegisterClassForCellReuse(Operators.typeof<QueueCell>, QueueCell.ReuseId)
-        this.Source <- new QueueViewSource(this)
-
-
-
-
 [<Register("MainViewController")>]
 type MainViewController() as this = 
-    inherit UIViewController()
-
-    let mutable queueView = None
-
+    inherit UITableViewController()
     do
         this.Title <- "My Queue"
         let addBtn = new UIBarButtonItem(UIBarButtonSystemItem.Add, fun sender eventArgs ->
@@ -68,17 +55,9 @@ type MainViewController() as this =
     // Perform any additional setup after loading the view, typically from a nib.
     override this.ViewDidLoad() =
         base.ViewDidLoad()
-
-        let view = this.View
-        let qView = match queueView with
-                    | None ->
-                        let qv = new QueueView(view.Bounds)
-                        queueView <- Some qv
-                        qv
-                    | Some qv -> qv
-                           
-        view.AddSubview(qView)
-
+        let tv = this.TableView
+        tv.RegisterClassForCellReuse(Operators.typeof<QueueCell>, QueueCell.ReuseId)
+        tv.Source <- new QueueViewSource(tv)
 
     // Return true for supported orientations
     override this.ShouldAutorotateToInterfaceOrientation(orientation) = 
