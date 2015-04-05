@@ -26,19 +26,20 @@ type QueueViewSource(tableView : UITableView) =
     inherit UITableViewSource()
 
     let tv = tableView
-    let queue = QLib.GetQueueView()
+    let queues = QLib.GetAllQueues()
 
-    do queue.CollectionChanged.Add(fun _ -> tv.ReloadData())
+    override this.NumberOfSections(tableView) = nint queues.Length
+    override this.RowsInSection(tableView, section) = nint queues.[int section].Count
+    override this.TitleForHeader(tableView, section) = QLogic.Buckets.[int section]
 
-    override this.RowsInSection(tableView, section) = nint queue.Count
     override this.GetCell(tableView, indexPath) =
         let cell = tableView.DequeueReusableCell (QueueCell.ReuseId, indexPath) :?> QueueCell
-        cell.Bind(queue.[indexPath.Row])
+        cell.Bind(queues.[indexPath.Section].[indexPath.Row])
         cell :> UITableViewCell
 
 
 type HomeViewController() as this = 
-    inherit UITableViewController()
+    inherit UITableViewController(UITableViewStyle.Grouped)
     do
         this.Title <- "My Queue"
         let addBtn = new UIBarButtonItem(UIBarButtonSystemItem.Add, fun sender eventArgs ->
