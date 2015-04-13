@@ -27,7 +27,7 @@ type AppDelegate() =
     // This method is invoked when the application is ready to run.
     override this.FinishedLaunching(app, options) = 
         this.Window <- new UIWindow(UIScreen.MainScreen.Bounds)
-        this.Window.RootViewController <- new UINavigationController(new HomeViewController())
+        this.Window.RootViewController <- new UINavigationController(new TodayViewController())
         this.Window.MakeKeyAndVisible()
         true
 

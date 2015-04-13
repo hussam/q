@@ -70,3 +70,13 @@ module QLogic =
         | Soon -> fun (_, soon, _) -> soon
         | SomeTime -> fun (_, _, sometime) -> sometime
 
+    let schedule (item : QItem) =
+        match strToDu item.Topic with
+        | None -> None
+        | Some topic ->
+            let timeNow = DateTime.Now.TimeOfDay
+            let defaultTimes = defaultTime topic
+            let time = match defaultTimes |> List.filter (fun t -> t > timeNow) with
+                       | time :: _ -> time
+                       | [] -> List.nth defaultTimes (defaultTimes.Length - 1)
+            Some (DateTime.Today.Add(time))

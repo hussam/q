@@ -79,6 +79,9 @@
     <Reference Include="SQLite">
       <HintPath>..\Components\sqlite-net-1.0.8.3\lib\ios-unified\SQLite.dll</HintPath>
     </Reference>
+    <Reference Include="SwipeableViewCell">
+      <HintPath>..\References\SwipeableViewCell.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\AppIcon%402x.png" />
@@ -96,6 +99,7 @@
     <Compile Include="Controls.fs" />
     <Compile Include="NewItemViewController.fs" />
     <Compile Include="HomeViewController.fs" />
+    <Compile Include="TodayViewController.fs" />
     <Compile Include="AppDelegate.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.FSharp.targets" />

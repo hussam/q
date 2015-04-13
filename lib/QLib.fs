@@ -4,43 +4,66 @@ open System
 open System.IO
 open System.Collections.ObjectModel
 
-module QLib =
-    let mutable private qdb = None
-    let mutable private queues = None
+exception QLibNotInitialized
 
-    let private sometime (qs) =
-        match qs with
-        | None -> None
-        | Some (_, _, sometimeQueue) -> Some sometimeQueue
+type QLib private () =
+    static let mutable qdb : QItemDB Option = None
+    static let queues = Array.init 3 (fun _ -> null)
+    static let agenda = Array.init 1 (fun _ -> null)
 
+    static let mutable isLoaded = false
 
+    static let loadData() =
+        match isLoaded with
+        | true -> ()
+        | false ->
+            match qdb with
+            | None -> raise QLibNotInitialized
+            | Some db ->
+                let items = db.GetItems().Result    // this will block until items are loaded
 
-    let Topics = QLogic.Topics
-    let Buckets = QLogic.Buckets
+                let (_, now) , (_, soon),  (_, someTime) = QLogic.sortToBuckets (List.ofSeq items)
+                queues.[0] <- new ObservableCollection<_>(now)
+                queues.[1] <- new ObservableCollection<_>(soon)
+                queues.[2] <- new ObservableCollection<_>(someTime)
 
-    let Init dbPath = 
+                // Add items to daily agenda
+                let today = DateTime.Today
+                let agendaItems = items
+                                    |> List.ofSeq
+                                    |> List.filter (fun qi -> qi.Schedule.Date = today)
+                agenda.[0] <- new ObservableCollection<_>(agendaItems)
+
+                isLoaded <- true
+
+    static member Init(dbPath) =
         let db = new QItemDB(Path.Combine(dbPath, "q.sqlite"))
-        db.CreateTable () |> ignore
+        db.CreateTable().Wait()
         qdb <- Some db
-        true
 
-    let GetAllQueues() =
-        match qdb with
-        | None -> Array.empty
-        | Some db ->
-            let items = db.GetItems() |> Async.RunSynchronously
-            let (_, now) , (_, soon),  (_, someTime) = QLogic.sortToBuckets (List.ofSeq items)
-            let n = new ObservableCollection<QItem>(List.toSeq(now))
-            let s = new ObservableCollection<QItem>(List.toSeq(soon))
-            let st = new ObservableCollection<QItem>(List.toSeq(someTime))
-            queues <- Some (n, s, st)
-            [| n ; s ; st |]
+    static member Topics = QLogic.Topics
+    static member Buckets = QLogic.Buckets
+    static member AllQueues = (loadData() ; queues)
+    static member TodaysAgenda = (loadData() ; agenda)
 
-    let SaveItem item =
+    static member SaveItem item =
+        loadData()
         match qdb with
-        | None -> false
+        | None -> ()
         | Some db ->
             db.SaveItem(item) |> ignore
-            match sometime(queues) with
-            | None -> false
-            | Some queue -> queue.Add(item); true
+            queues.[2].Add(item)
+
+    static member ScheduleItemForToday item =
+        loadData()
+        match qdb with
+        | None -> ()
+        | Some db ->
+            match QLogic.schedule item with
+            | None -> ()
+            | Some dateTime -> 
+                item.Schedule <- dateTime
+                agenda.[0].Add(item)
+                db.UpdateItem(item) |> ignore
+
+                queues |> Array.iter (fun q -> q.Remove(item) |> ignore)
