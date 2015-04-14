@@ -8,8 +8,7 @@ exception QLibNotInitialized
 
 type QLib private () =
     static let mutable qdb : QItemDB Option = None
-    static let queues = Array.init 3 (fun _ -> null)
-    static let agenda = Array.init 1 (fun _ -> null)
+    static let queues = Array.init 4 (fun _ -> null)
 
     static let mutable isLoaded = false
 
@@ -22,18 +21,11 @@ type QLib private () =
             | Some db ->
                 let items = db.GetItems().Result    // this will block until items are loaded
 
-                let (_, now) , (_, soon),  (_, someTime) = QLogic.sortToBuckets (List.ofSeq items)
-                queues.[0] <- new ObservableCollection<_>(now)
-                queues.[1] <- new ObservableCollection<_>(soon)
-                queues.[2] <- new ObservableCollection<_>(someTime)
-
-                // Add items to daily agenda
-                let today = DateTime.Today
-                let agendaItems = items
-                                    |> List.ofSeq
-                                    |> List.filter (fun qi -> qi.Schedule.Date = today)
-                agenda.[0] <- new ObservableCollection<_>(agendaItems)
-
+                let (_, scheduled) , (_, now) , (_, soon),  (_, someTime) = QLogic.sortToBuckets (List.ofSeq items)
+                queues.[0] <- new ObservableCollection<_>(scheduled)
+                queues.[1] <- new ObservableCollection<_>(now)
+                queues.[2] <- new ObservableCollection<_>(soon)
+                queues.[3] <- new ObservableCollection<_>(someTime)
                 isLoaded <- true
 
     static member Init(dbPath) =
@@ -44,7 +36,6 @@ type QLib private () =
     static member Topics = QLogic.Topics
     static member Buckets = QLogic.Buckets
     static member AllQueues = (loadData() ; queues)
-    static member TodaysAgenda = (loadData() ; agenda)
 
     static member SaveItem item =
         loadData()
@@ -63,7 +54,6 @@ type QLib private () =
             | None -> ()
             | Some dateTime -> 
                 item.Schedule <- dateTime
-                agenda.[0].Add(item)
-                db.UpdateItem(item) |> ignore
-
                 queues |> Array.iter (fun q -> q.Remove(item) |> ignore)
+                queues.[0].Add(item)
+                db.UpdateItem(item) |> ignore

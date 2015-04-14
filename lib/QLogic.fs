@@ -32,7 +32,7 @@ module QLogic =
         | Dinner -> [ evening ]
         | Drinks -> [ evening; night ]
 
-    type Bucket = Now | Soon | SomeTime
+    type Bucket = Scheduled | Now | Soon | SomeTime
 
     let Buckets = FSharpType.GetUnionCases typeof<Bucket> |> Array.map (fun b -> b.Name)
 
@@ -50,25 +50,24 @@ module QLogic =
 
     let sortToBuckets list =
         let timeNow = DateTime.Now.TimeOfDay
-        let (now, soon, sometime) = list |> List.map (fun (item : QItem) ->
-                                            match strToDu item.Topic with
-                                            | Some topic -> Some (topic, item)
-                                            | None -> None)
-                                         |> List.fold (fun ((now, soon, sometime) as acc) qiOpt ->
-                                            match qiOpt with
-                                            | None -> acc
-                                            | Some (topic, item) ->
-                                                match bucket topic timeNow with
-                                                | Now -> ((item :: now) , soon, sometime)
-                                                | Soon -> (now, (item :: soon), sometime)
-                                                | SomeTime -> (now, soon, (item :: sometime))
-                                            ) ([], [], [])
-        ((Now, now) , (Soon, soon), (SomeTime, sometime))
-
-    let bucketChooser = function
-        | Now -> fun (now, _, _) -> now
-        | Soon -> fun (_, soon, _) -> soon
-        | SomeTime -> fun (_, _, sometime) -> sometime
+        let (scheduled, now, soon, sometime) = list |> List.map (fun (item : QItem) ->
+                                                        match strToDu item.Topic with
+                                                        | Some topic -> Some (topic, item)
+                                                        | None -> None)
+                                                    |> List.fold (fun ((scheduled, now, soon, sometime) as acc) qiOpt ->
+                                                        match qiOpt with
+                                                        | None -> acc
+                                                        | Some (topic, item) ->
+                                                            if item.Schedule.Date = DateTime.Today
+                                                            then ((item :: scheduled), now, soon, sometime)
+                                                            else
+                                                                match bucket topic timeNow with
+                                                                | Now -> (scheduled, (item :: now) , soon, sometime)
+                                                                | Soon -> (scheduled, now, (item :: soon), sometime)
+                                                                | SomeTime -> (scheduled, now, soon, (item :: sometime))
+                                                                | Scheduled -> raise ShouldNotGetHere
+                                                        ) ([], [], [], [])
+        ((Scheduled, scheduled) , (Now, now) , (Soon, soon), (SomeTime, sometime))
 
     let schedule (item : QItem) =
         match strToDu item.Topic with

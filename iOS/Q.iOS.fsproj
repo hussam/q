@@ -99,7 +99,6 @@
     <Compile Include="Controls.fs" />
     <Compile Include="NewItemViewController.fs" />
     <Compile Include="HomeViewController.fs" />
-    <Compile Include="TodayViewController.fs" />
     <Compile Include="AppDelegate.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.FSharp.targets" />

@@ -3,6 +3,8 @@
 open Microsoft.FSharp.Reflection
 
 module Utils =
+    exception ShouldNotGetHere
+
     let asyncMap f workflow = async {
         let! res = workflow
         return f res

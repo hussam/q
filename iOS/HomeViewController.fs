@@ -72,10 +72,6 @@ type HomeViewController() as this =
             this.PresentViewController(c, true, null))
         this.NavigationItem.SetRightBarButtonItem(addBtn, false)
 
-        let flipBtn = new UIBarButtonItem("Today", UIBarButtonItemStyle.Plain, fun sender eventArgs ->
-            this.DismissViewController(true, null))
-        this.NavigationItem.SetLeftBarButtonItem(flipBtn, false)
-
     // Perform any additional setup after loading the view
     override this.ViewDidLoad() =
         base.ViewDidLoad()
