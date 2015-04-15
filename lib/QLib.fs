@@ -20,8 +20,9 @@ type QLib private () =
             | None -> raise QLibNotInitialized
             | Some db ->
                 let items = db.GetItems().Result    // this will block until items are loaded
+                let uncompleted = items |> List.ofSeq |> List.filter (fun i -> i.Completed = false)
 
-                let (_, scheduled) , (_, now) , (_, soon),  (_, someTime) = QLogic.sortToBuckets (List.ofSeq items)
+                let (_, scheduled) , (_, now) , (_, soon),  (_, someTime) = QLogic.sortToBuckets (uncompleted)
                 queues.[0] <- new ObservableCollection<_>(scheduled)
                 queues.[1] <- new ObservableCollection<_>(now)
                 queues.[2] <- new ObservableCollection<_>(soon)
@@ -66,4 +67,21 @@ type QLib private () =
             queues.[0].Remove(item) |> ignore
             queues.[3].Add(item)
             item.Schedule <- new DateTime(1,1,1)
+            db.UpdateItem(item) |> ignore
+
+    static member DeleteItem item =
+        loadData()
+        match qdb with
+        | None -> ()
+        | Some db ->
+            queues |> Array.iter (fun q -> q.Remove(item) |> ignore)
+            db.DeleteItem(item) |> ignore
+
+    static member MarkItemAsCompleted item =
+        loadData()
+        match qdb with
+        | None -> ()
+        | Some db ->
+            queues |> Array.iter (fun q -> q.Remove(item) |> ignore)
+            item.Completed <- true
             db.UpdateItem(item) |> ignore

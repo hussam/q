@@ -19,6 +19,7 @@ type QItem() =
     member val Text : string = null with get, set
     member val Topic : string = null with get, set
     member val Schedule : DateTime = new DateTime(1,1,1) with get, set
+    member val Completed : bool = false with get, set
 
 
 type QItemDB(path) =
@@ -37,3 +38,6 @@ type QItemDB(path) =
 
     member this.UpdateItem(item : QItem) =
         lock locker (fun() -> this.UpdateAsync(item))
+
+    member this.DeleteItem(item : QItem) =
+        lock locker (fun() -> this.DeleteAsync(item))

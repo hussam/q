@@ -46,7 +46,10 @@ type QueueViewSource(tableView : UITableView) =
         let cell = tableView.DequeueReusableCell (QueueCell.ReuseId, indexPath) :?> QueueCell
         cell.Bind(item)
 
-        let swipeActionView = new UILabel(CGRect(nfloat 0.0, nfloat 0.0, nfloat 100.0, nfloat 60.0))
+        cell.CellSwipeGestureRecognizer.LongTrigger <- nfloat 0.55
+        let frame = CGRect(nfloat 0.0, nfloat 0.0, nfloat 100.0, nfloat 60.0)
+
+        let swipeActionView = new UILabel(frame)
         swipeActionView.TextColor <- UIColor.White
         swipeActionView.TextAlignment <- UITextAlignment.Center
 
@@ -54,7 +57,7 @@ type QueueViewSource(tableView : UITableView) =
             swipeActionView.Text <- "Remove"
             cell.SetSwipeGestureWithView(
                 swipeActionView,
-                UIColor.QMagenta,
+                UIColor.QSalmon,
                 SwipeTableCellMode.Exit,
                 SwipeTableViewCellState.StateLeftShort,
                 new SwipeCompletionBlock(fun view state mode ->
@@ -72,6 +75,34 @@ type QueueViewSource(tableView : UITableView) =
                     QLib.ScheduleItemForToday(item)
                     )
                 )
+
+        let completedActionView = new UILabel(frame)
+        completedActionView.Text <- "Completed"
+        completedActionView.TextColor <- UIColor.White
+        completedActionView.TextAlignment <- UITextAlignment.Left
+        cell.SetSwipeGestureWithView(
+            completedActionView,
+            UIColor.QGreen,
+            SwipeTableCellMode.Exit,
+            SwipeTableViewCellState.StateRightShort,
+            new SwipeCompletionBlock(fun view state mode ->
+                QLib.MarkItemAsCompleted(item)
+                )
+            )
+
+        let deleteActionView = new UILabel(frame)
+        deleteActionView.Text <- "Delete"
+        deleteActionView.TextColor <- UIColor.White
+        deleteActionView.TextAlignment <- UITextAlignment.Left
+        cell.SetSwipeGestureWithView(
+            deleteActionView,
+            UIColor.QMagenta,
+            SwipeTableCellMode.Exit,
+            SwipeTableViewCellState.StateRightLong,
+            new SwipeCompletionBlock(fun view state mode ->
+                QLib.DeleteItem(item)
+                )
+            )
 
         cell :> UITableViewCell
 
