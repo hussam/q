@@ -57,3 +57,13 @@ type QLib private () =
                 queues |> Array.iter (fun q -> q.Remove(item) |> ignore)
                 queues.[0].Add(item)
                 db.UpdateItem(item) |> ignore
+
+    static member UnscheduleItem item =
+        loadData()
+        match qdb with
+        | None -> ()
+        | Some db ->
+            queues.[0].Remove(item) |> ignore
+            queues.[3].Add(item)
+            item.Schedule <- new DateTime(1,1,1)
+            db.UpdateItem(item) |> ignore

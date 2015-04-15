@@ -46,19 +46,32 @@ type QueueViewSource(tableView : UITableView) =
         let cell = tableView.DequeueReusableCell (QueueCell.ReuseId, indexPath) :?> QueueCell
         cell.Bind(item)
 
-        let scheduleView = new UILabel(CGRect(nfloat 0.0, nfloat 0.0, nfloat 100.0, nfloat 60.0))
-        scheduleView.Text <- "Schedule"
-        scheduleView.TextColor <- UIColor.White
-        scheduleView.TextAlignment <- UITextAlignment.Center
-        cell.SetSwipeGestureWithView(
-            scheduleView,
-            UIColor.QBlue,
-            SwipeTableCellMode.Exit,
-            SwipeTableViewCellState.StateLeftShort,
-            new SwipeCompletionBlock(fun view state mode ->
-                QLib.ScheduleItemForToday(item) |> ignore
+        let swipeActionView = new UILabel(CGRect(nfloat 0.0, nfloat 0.0, nfloat 100.0, nfloat 60.0))
+        swipeActionView.TextColor <- UIColor.White
+        swipeActionView.TextAlignment <- UITextAlignment.Center
+
+        if indexPath.Section = 0 then
+            swipeActionView.Text <- "Remove"
+            cell.SetSwipeGestureWithView(
+                swipeActionView,
+                UIColor.QMagenta,
+                SwipeTableCellMode.Exit,
+                SwipeTableViewCellState.StateLeftShort,
+                new SwipeCompletionBlock(fun view state mode ->
+                    QLib.UnscheduleItem(item)
+                    )
                 )
-            )
+        else
+            swipeActionView.Text <- "Schedule"
+            cell.SetSwipeGestureWithView(
+                swipeActionView,
+                UIColor.QBlue,
+                SwipeTableCellMode.Exit,
+                SwipeTableViewCellState.StateLeftShort,
+                new SwipeCompletionBlock(fun view state mode ->
+                    QLib.ScheduleItemForToday(item)
+                    )
+                )
 
         cell :> UITableViewCell
 
