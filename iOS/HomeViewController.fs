@@ -6,6 +6,7 @@ open Foundation
 open CoreGraphics
 
 open SwipeableViewCell
+open Xamarin
 
 open Utilites
 open qlib
@@ -62,6 +63,7 @@ type QueueViewSource(tableView : UITableView) =
                 SwipeTableViewCellState.StateLeftShort,
                 new SwipeCompletionBlock(fun view state mode ->
                     QLib.UnscheduleItem(item)
+                    Insights.Track("RequeuedTask", "topic", item.Topic)
                     )
                 )
         else
@@ -73,6 +75,7 @@ type QueueViewSource(tableView : UITableView) =
                 SwipeTableViewCellState.StateLeftShort,
                 new SwipeCompletionBlock(fun view state mode ->
                     QLib.ScheduleItemForToday(item)
+                    Insights.Track("ScheduledQueuedTask", "topic", item.Topic)
                     )
                 )
 
@@ -87,6 +90,7 @@ type QueueViewSource(tableView : UITableView) =
             SwipeTableViewCellState.StateRightShort,
             new SwipeCompletionBlock(fun view state mode ->
                 QLib.MarkItemAsCompleted(item)
+                Insights.Track("CompletedTask", "topic", item.Topic)
                 )
             )
 
@@ -101,6 +105,7 @@ type QueueViewSource(tableView : UITableView) =
             SwipeTableViewCellState.StateRightLong,
             new SwipeCompletionBlock(fun view state mode ->
                 QLib.DeleteItem(item)
+                Insights.Track("DeletedTask", "topic", item.Topic)
                 )
             )
 

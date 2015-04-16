@@ -154,6 +154,7 @@ type NewItemViewController =
             save.TranslatesAutoresizingMaskIntoConstraints <- false
             save.TouchUpInside.Add(fun _ ->
                 QLib.SaveItem(new QItem(Text = venue.Text, Topic = topic.Text)) |> ignore
+                Xamarin.Insights.Track("CreatedTask", "topic", topic.Text)
                 venue.ResignFirstResponder() |> ignore
                 this.DismissViewController(true, null)
                 )

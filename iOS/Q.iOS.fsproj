@@ -12,7 +12,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <DefineConstants>DEBUG;SIMULATOR</DefineConstants>
     <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <MtouchLink>None</MtouchLink>
@@ -84,6 +84,12 @@
     <Reference Include="SwipeableViewCell">
       <HintPath>..\References\SwipeableViewCell.dll</HintPath>
     </Reference>
+    <Reference Include="Xamarin.Insights">
+      <HintPath>..\packages\Xamarin.Insights.1.9.1.107\lib\Xamarin.iOS10\Xamarin.Insights.dll</HintPath>
+    </Reference>
+    <Reference Include="PLCrashReporterUnifiedBinding">
+      <HintPath>..\packages\Xamarin.Insights.1.9.1.107\lib\Xamarin.iOS10\PLCrashReporterUnifiedBinding.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\AppIcon%402x.png" />
@@ -93,6 +99,7 @@
   <ItemGroup>
     <None Include="Info.plist" />
     <None Include="Entitlements.plist" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoLayout.fs" />

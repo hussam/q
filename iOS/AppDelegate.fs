@@ -5,6 +5,8 @@ open System.IO
 open UIKit
 open Foundation
 
+open Xamarin
+
 open qlib
 
 [<Register("AppDelegate")>]
@@ -34,6 +36,11 @@ type AppDelegate() =
 module Main = 
     [<EntryPoint>]
     let main args =
+        #if SIMULATOR
+        Insights.Initialize(Insights.DebugModeKey)
+        #else
+        Insights.Initialize("f0f8669df33ff445f872a6c8a7704509eab6d773")
+        #endif
         UIApplication.Main(args, null, "AppDelegate")
         0
 
