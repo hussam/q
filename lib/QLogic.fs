@@ -14,6 +14,7 @@ module QLogic =
         | Lunch
         | Brunch
         | Dinner
+        | Other
 
     let Topics = FSharpType.GetUnionCases typeof<Topic> |> Array.map (fun t -> t.Name)
 
@@ -31,22 +32,25 @@ module QLogic =
         | Brunch -> [ morning; noon ]
         | Dinner -> [ evening ]
         | Drinks -> [ evening; night ]
+        | Other -> [ evening ]  // TODO: FIXME: This is just a stopgap
 
     type Bucket = Scheduled | Now | Soon | SomeTime
 
     let Buckets = FSharpType.GetUnionCases typeof<Bucket> |> Array.map (fun b -> b.Name)
 
     let bucket topic time =
-        let nextDay = TimeSpan.FromDays(1.0)
-        let nearestTime =
-            (defaultTime topic)
-            |> List.map (fun t -> let diff = t.Subtract(time) in if diff > TimeSpan.Zero then diff else diff.Add(nextDay))
-            |> List.filter (fun t -> t > TimeSpan.Zero)
-            |> List.min
+        if topic = Other then SomeTime
+        else
+            let nextDay = TimeSpan.FromDays(1.0)
+            let nearestTime =
+                (defaultTime topic)
+                |> List.map (fun t -> let diff = t.Subtract(time) in if diff > TimeSpan.Zero then diff else diff.Add(nextDay))
+                |> List.filter (fun t -> t > TimeSpan.Zero)
+                |> List.min
 
-        if nearestTime.Hours <= 1 then Now
-        elif nearestTime.Hours <= 3 then Soon
-        else SomeTime
+            if nearestTime.Hours <= 1 then Now
+            elif nearestTime.Hours <= 3 then Soon
+            else SomeTime
 
     let sortToBuckets list =
         let timeNow = DateTime.Now.TimeOfDay
