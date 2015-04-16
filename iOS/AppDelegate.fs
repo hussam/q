@@ -16,7 +16,7 @@ type AppDelegate() =
     override this.WillFinishLaunching(app, options) =
         let appSupportDir = NSFileManager.DefaultManager.GetUrls(NSSearchPathDirectory.ApplicationSupportDirectory, NSSearchPathDomain.User).[0].Path
 
-        #if __IOS__
+        #if DEBUG
         printfn "DB Path: %s" appSupportDir
         #endif
 
@@ -33,7 +33,7 @@ type AppDelegate() =
 
 module Main = 
     [<EntryPoint>]
-    let main args = 
+    let main args =
         UIApplication.Main(args, null, "AppDelegate")
         0
 
