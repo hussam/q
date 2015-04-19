@@ -40,7 +40,7 @@ type QueueViewSource(tableView : UITableView) =
 
     override this.NumberOfSections(tableView) = nint queues.Length
     override this.RowsInSection(tableView, section) = nint queues.[int section].Count
-    override this.TitleForHeader(tableView, section) = QLogic.Buckets.[int section]
+    override this.TitleForHeader(tableView, section) = QLib.Buckets.[int section]
 
     override this.GetCell(tableView, indexPath) =
         let item = queues.[indexPath.Section].[indexPath.Row]

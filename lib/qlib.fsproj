@@ -43,6 +43,7 @@
     <Compile Include="Utils.fs" />
     <Compile Include="DB.fs" />
     <Compile Include="QLogic.fs" />
+    <Compile Include="QScheduling.fs" />
     <Compile Include="QLib.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.FSharp.targets" />

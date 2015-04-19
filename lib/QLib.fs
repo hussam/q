@@ -22,7 +22,7 @@ type QLib private () =
                 let items = db.GetItems().Result    // this will block until items are loaded
                 let uncompleted = items |> List.ofSeq |> List.filter (fun i -> i.Completed = false)
 
-                let (_, scheduled) , (_, now) , (_, soon),  (_, someTime) = QLogic.sortToBuckets (uncompleted)
+                let (_, scheduled) , (_, now) , (_, soon),  (_, someTime) = QScheduling.sortToBuckets (uncompleted)
                 queues.[0] <- new ObservableCollection<_>(scheduled)
                 queues.[1] <- new ObservableCollection<_>(now)
                 queues.[2] <- new ObservableCollection<_>(soon)
@@ -35,7 +35,7 @@ type QLib private () =
         qdb <- Some db
 
     static member Topics = QLogic.Topics
-    static member Buckets = QLogic.Buckets
+    static member Buckets = QScheduling.Buckets
     static member AllQueues = (loadData() ; queues)
 
     static member SaveItem item =
@@ -51,7 +51,7 @@ type QLib private () =
         match qdb with
         | None -> ()
         | Some db ->
-            match QLogic.schedule item with
+            match QScheduling.schedule item with
             | None -> ()
             | Some dateTime -> 
                 item.Schedule <- dateTime
