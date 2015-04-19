@@ -2,6 +2,7 @@
 
 open System
 open UIKit
+open CoreGraphics
 
 type UIColor with
     static member Aqua = UIColor.FromRGB(0, 255, 255)
@@ -53,3 +54,6 @@ type UIColor with
 
 
 let QColors = [| UIColor.QBlue ; UIColor.QYellow ; UIColor.QSalmon ; UIColor.QMagenta ; UIColor.QGreen ; UIColor.QLime |]
+
+let CGRectWithSize (width : float)  (height : float) =
+    new CGRect(nfloat 0.0, nfloat 0.0, nfloat width, nfloat height)

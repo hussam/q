@@ -1,5 +1,6 @@
 ﻿namespace qlib
 
+#if false
 open System
 open Microsoft.FSharp.Reflection
 
@@ -71,3 +72,5 @@ module QScheduling =
                        | time :: _ -> time
                        | [] -> List.nth defaultTimes (defaultTimes.Length - 1)
             Some (DateTime.Today.Add(time))
+
+#endif

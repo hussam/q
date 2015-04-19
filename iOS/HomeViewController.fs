@@ -26,7 +26,9 @@ type QueueCell =
     member this.Bind (item : QItem) =
         this.item <- item
         this.TextLabel.Text <- item.Text
+        this.TextLabel.Enabled <- not item.Completed
         this.DetailTextLabel.Text <- item.Topic
+        this.DetailTextLabel.Enabled <- not item.Completed
 
 
 type QueueViewSource(tableView : UITableView) =
@@ -40,74 +42,63 @@ type QueueViewSource(tableView : UITableView) =
 
     override this.NumberOfSections(tableView) = nint queues.Length
     override this.RowsInSection(tableView, section) = nint queues.[int section].Count
-    override this.TitleForHeader(tableView, section) = QLib.Buckets.[int section]
+    override this.TitleForHeader(tableView, section) = QLib.QueueNames.[int section]
 
     override this.GetCell(tableView, indexPath) =
         let item = queues.[indexPath.Section].[indexPath.Row]
         let cell = tableView.DequeueReusableCell (QueueCell.ReuseId, indexPath) :?> QueueCell
         cell.Bind(item)
 
-        cell.CellSwipeGestureRecognizer.LongTrigger <- nfloat 0.55
-        let frame = CGRect(nfloat 0.0, nfloat 0.0, nfloat 100.0, nfloat 60.0)
+        cell.CellSwipeGestureRecognizer.ShortTrigger <- nfloat 0.30
+        let frameWithWidth width = CGRectWithSize width 60.0
 
-        let swipeActionView = new UILabel(frame)
-        swipeActionView.TextColor <- UIColor.White
-        swipeActionView.TextAlignment <- UITextAlignment.Center
-
-        if indexPath.Section = 0 then
-            swipeActionView.Text <- "Remove"
+        if indexPath.Section = QLib.Uncompleted then
+            let completedActionView = new UILabel(frameWithWidth 100.0)
+            completedActionView.Text <- "Completed"
+            completedActionView.TextColor <- UIColor.White
+            completedActionView.TextAlignment <- UITextAlignment.Center
             cell.SetSwipeGestureWithView(
-                swipeActionView,
-                UIColor.QSalmon,
+                completedActionView,
+                UIColor.QGreen,
                 SwipeTableCellMode.Exit,
                 SwipeTableViewCellState.StateLeftShort,
                 new SwipeCompletionBlock(fun view state mode ->
-                    QLib.UnscheduleItem(item)
-                    Insights.Track("RequeuedTask", "topic", item.Topic)
+                    QLib.MarkItemAsCompleted(item)
+                    Insights.Track("CompletedTask", "topic", item.Topic)
                     )
                 )
         else
-            swipeActionView.Text <- "Schedule"
+            let uncompletedAction = new UILabel(frameWithWidth 110.0)
+            uncompletedAction.Text <- "Uncomplete"
+            uncompletedAction.TextColor <- UIColor.White
+            uncompletedAction.TextAlignment <- UITextAlignment.Center
             cell.SetSwipeGestureWithView(
-                swipeActionView,
+                uncompletedAction,
                 UIColor.QBlue,
                 SwipeTableCellMode.Exit,
-                SwipeTableViewCellState.StateLeftShort,
+                SwipeTableViewCellState.StateRightShort,
                 new SwipeCompletionBlock(fun view state mode ->
-                    QLib.ScheduleItemForToday(item)
-                    Insights.Track("ScheduledQueuedTask", "topic", item.Topic)
+                    QLib.MarkItemAsUncompleted(item)
+                    Insights.Track("UnCompletedTask", "topic", item.Topic)
                     )
                 )
 
-        let completedActionView = new UILabel(frame)
-        completedActionView.Text <- "Completed"
-        completedActionView.TextColor <- UIColor.White
-        completedActionView.TextAlignment <- UITextAlignment.Left
-        cell.SetSwipeGestureWithView(
-            completedActionView,
-            UIColor.QGreen,
-            SwipeTableCellMode.Exit,
-            SwipeTableViewCellState.StateRightShort,
-            new SwipeCompletionBlock(fun view state mode ->
-                QLib.MarkItemAsCompleted(item)
-                Insights.Track("CompletedTask", "topic", item.Topic)
-                )
-            )
-
-        let deleteActionView = new UILabel(frame)
+        #if false
+        let deleteActionView = new UILabel(frameWithWidth 80.0)
         deleteActionView.Text <- "Delete"
         deleteActionView.TextColor <- UIColor.White
-        deleteActionView.TextAlignment <- UITextAlignment.Left
+        deleteActionView.TextAlignment <- UITextAlignment.Center
         cell.SetSwipeGestureWithView(
             deleteActionView,
             UIColor.QMagenta,
             SwipeTableCellMode.Exit,
-            SwipeTableViewCellState.StateRightLong,
+            SwipeTableViewCellState.StateLeftShort,
             new SwipeCompletionBlock(fun view state mode ->
                 QLib.DeleteItem(item)
                 Insights.Track("DeletedTask", "topic", item.Topic)
                 )
             )
+        #endif
 
         cell :> UITableViewCell
 

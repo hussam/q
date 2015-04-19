@@ -8,7 +8,7 @@ exception QLibNotInitialized
 
 type QLib private () =
     static let mutable qdb : QItemDB Option = None
-    static let queues = Array.init 4 (fun _ -> null)
+    static let queues = Array.init 2 (fun _ -> null)
 
     static let mutable isLoaded = false
 
@@ -20,13 +20,10 @@ type QLib private () =
             | None -> raise QLibNotInitialized
             | Some db ->
                 let items = db.GetItems().Result    // this will block until items are loaded
-                let uncompleted = items |> List.ofSeq |> List.filter (fun i -> i.Completed = false)
+                let uncompleted, completed = items |> List.ofSeq |> List.partition (fun i -> i.Completed = false)
 
-                let (_, scheduled) , (_, now) , (_, soon),  (_, someTime) = QScheduling.sortToBuckets (uncompleted)
-                queues.[0] <- new ObservableCollection<_>(scheduled)
-                queues.[1] <- new ObservableCollection<_>(now)
-                queues.[2] <- new ObservableCollection<_>(soon)
-                queues.[3] <- new ObservableCollection<_>(someTime)
+                queues.[0] <- new ObservableCollection<_>(uncompleted)
+                queues.[1] <- new ObservableCollection<_>(completed)
                 isLoaded <- true
 
     static member Init(dbPath) =
@@ -35,8 +32,11 @@ type QLib private () =
         qdb <- Some db
 
     static member Topics = QLogic.Topics
-    static member Buckets = QScheduling.Buckets
+    static member QueueNames = [| "" ; "Completed" |]
     static member AllQueues = (loadData() ; queues)
+
+    static member Uncompleted = 0
+    static member Completed = 1
 
     static member SaveItem item =
         loadData()
@@ -44,8 +44,30 @@ type QLib private () =
         | None -> ()
         | Some db ->
             db.SaveItem(item) |> ignore
-            queues.[2].Add(item)
+            queues.[0].Add(item)
 
+    static member MarkItemAsCompleted item =
+        loadData()
+        match qdb with
+        | None -> ()
+        | Some db ->
+            queues.[0].Remove(item) |> ignore
+            item.Completed <- true
+            db.UpdateItem(item) |> ignore
+            queues.[1].Add(item) |> ignore
+
+    static member MarkItemAsUncompleted item =
+        loadData()
+        match qdb with
+        | None -> ()
+        | Some db ->
+            queues.[1].Remove(item) |> ignore
+            item.Completed <- false
+            db.UpdateItem(item) |> ignore
+            queues.[0].Add(item) |> ignore
+
+
+    #if false
     static member ScheduleItemForToday item =
         loadData()
         match qdb with
@@ -76,12 +98,4 @@ type QLib private () =
         | Some db ->
             queues |> Array.iter (fun q -> q.Remove(item) |> ignore)
             db.DeleteItem(item) |> ignore
-
-    static member MarkItemAsCompleted item =
-        loadData()
-        match qdb with
-        | None -> ()
-        | Some db ->
-            queues |> Array.iter (fun q -> q.Remove(item) |> ignore)
-            item.Completed <- true
-            db.UpdateItem(item) |> ignore
+    #endif
