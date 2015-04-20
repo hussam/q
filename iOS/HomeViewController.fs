@@ -29,6 +29,7 @@ type QueueCell =
         this.TextLabel.Enabled <- not item.Completed
         this.DetailTextLabel.Text <- item.Topic
         this.DetailTextLabel.Enabled <- not item.Completed
+        this.DetailTextLabel.Hidden <- item.Topic = "OTHER"
 
 
 type QueueViewSource(tableView : UITableView) =
