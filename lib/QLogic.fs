@@ -1,22 +1,32 @@
 ﻿namespace qlib
 
 open System
-open Microsoft.FSharp.Reflection
+open System.Collections.Generic
 
 open Utils
 
 module QLogic =
 
-    type Topic =
-        | Coffee
-        | Beer
-        | Drinks
+    type ActivityTopic =
+        | Breakfast
         | Lunch
         | Brunch
         | Dinner
-        | Other
+        | Coffee
+        | Tea
+        | Beer
+        | Drinks
 
-    let Topics = FSharpType.GetUnionCases typeof<Topic> |> Array.map (fun t -> t.Name)
+    type Topic =
+        | Activity of ActivityTopic
+        | Other of string
+
+    let Topics =
+        let dict = new Dictionary<_,_>()
+        dict.Add("Activity", unionCasesToStrArray typeof<ActivityTopic>)
+        dict.Add("Other", [| "Other" |])
+        dict
+
 
 
 

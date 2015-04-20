@@ -1,6 +1,7 @@
 ﻿namespace Q.iOS
 
 open System
+open System.Collections.Generic
 open UIKit
 open Foundation
 open CoreGraphics
@@ -9,6 +10,23 @@ open Utilites
 open Praeclarum.AutoLayout
 
 open qlib
+
+type TopicHeader =
+    inherit UICollectionReusableView
+
+    val private lbl : StyledLabel
+    member this.Title with get() = this.lbl.Text and set(title) = this.lbl.Text <- title
+
+    static member ReuseId = "topicHeader"
+
+    [<Export("initWithFrame:")>]
+    new (frame : CGRect) as this =
+        { inherit UICollectionReusableView(frame) ; lbl = new StyledLabel(Settings.StyledFontNameItalic, 18) } then
+        this.AddSubview(this.lbl)
+        this.AddConstraints [|
+            this.lbl.LayoutWidth == this.LayoutWidth
+            this.lbl.LayoutHeight == this.LayoutHeight
+        |]
 
 
 type TopicCell =
@@ -22,7 +40,7 @@ type TopicCell =
     [<Export("initWithFrame:")>]
     new (frame : CGRect) as this =
         { inherit UICollectionViewCell(frame) ; lbl = new StyledLabel(Settings.StyledFontName, 20) } then
-        this.lbl.TextAlignment <- UITextAlignment.Center
+        this.lbl.TextAlignment <- UITextAlignment.Left
         this.lbl.TranslatesAutoresizingMaskIntoConstraints <- false
         this.ContentView.AddSubview(this.lbl)
 
@@ -32,19 +50,27 @@ type TopicCell =
         |]
 
 
-type TopicsCollectionSource(topicTitles, onSelected) =
+type TopicsCollectionSource(onSelected) =
     inherit UICollectionViewSource()
 
-    let topics : string[] = topicTitles
+    let topicCategories = QLib.Topics.Keys |> Array.ofSeq
+    let topicItems = QLib.Topics.Values |> Array.ofSeq
     let itemSelected = new Event<_>()
 
-    override this.GetItemsCount(collectionView, section) = nint topics.Length
+    override this.NumberOfSections(collectionView) = nint topicCategories.Length
 
-    override this.ItemSelected(collectionView, indexPath) = onSelected(topics.[indexPath.Row])
+    override this.GetItemsCount(collectionView, section) = nint topicItems.[int section].Length
+
+    override this.ItemSelected(collectionView, indexPath) = onSelected(topicItems.[indexPath.Section].[indexPath.Row])
+
+    override this.GetViewForSupplementaryElement(collectionView, elementKind, indexPath) =
+        let header = collectionView.DequeueReusableSupplementaryView(elementKind, TopicHeader.ReuseId, indexPath) :?> TopicHeader
+        header.Title <- topicCategories.[indexPath.Section]
+        header :> UICollectionReusableView
 
     override this.GetCell(collectionView, indexPath) =
         let cell = collectionView.DequeueReusableCell(TopicCell.ReuseId, indexPath) :?> TopicCell
-        cell.Title <- topics.[indexPath.Row]
+        cell.Title <- topicItems.[indexPath.Section].[indexPath.Row]
         cell :> UICollectionViewCell
 
 
@@ -54,9 +80,11 @@ type TopicsCollectionView() as this =
     do
         this.BackgroundColor <- UIColor.White
         this.RegisterClassForCell(Operators.typeof<TopicCell>, TopicCell.ReuseId)
+        this.RegisterClassForSupplementaryView(Operators.typeof<TopicHeader>, UICollectionElementKindSection.Header, TopicHeader.ReuseId)
         let layout = this.CollectionViewLayout :?> UICollectionViewFlowLayout
         layout.ItemSize <- new CGSize(nfloat 80.0, nfloat 30.0)
         layout.SectionInset <- new UIEdgeInsets(nfloat 0.0, nfloat 10.0, nfloat 0.0, nfloat 10.0)
+        layout.HeaderReferenceSize <- new CGSize(nfloat 200.0 , nfloat 60.0)
 
     override this.CellForItem(indexPath) =
         match indexPath with
@@ -103,7 +131,7 @@ type NewItemViewController =
 
         let topicsGrid = new TopicsCollectionView()
         topicsGrid.TranslatesAutoresizingMaskIntoConstraints <- false
-        topicsGrid.Source <- new TopicsCollectionSource(QLib.Topics, fun selectedTitle ->
+        topicsGrid.Source <- new TopicsCollectionSource(fun selectedTitle ->
             topicsGrid.RemoveFromSuperview()
 
             let topic = new StyledLabel(Settings.StyledFontNameBoldItalic, 28)

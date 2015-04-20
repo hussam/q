@@ -1,5 +1,6 @@
 ﻿namespace qlib
 
+open System
 open Microsoft.FSharp.Reflection
 
 module Utils =
@@ -18,3 +19,6 @@ module Utils =
         match FSharpType.GetUnionCases typeof<'a> |> Array.filter (fun case -> case.Name.ToLower() = x.ToLower()) with
         |[|case|] -> Some(FSharpValue.MakeUnion(case,[||]) :?> 'a)
         |_ -> None
+
+    let unionCasesToStrArray (unionType : Type) =
+        FSharpType.GetUnionCases unionType |> Array.map (fun t -> t.Name)
