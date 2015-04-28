@@ -142,7 +142,7 @@ type NewItemViewController =
         view.BackgroundColor <- UIColor.White
 
         let prompt = new StyledLabel(Settings.StyledFontNameItalic, 24)
-        prompt.Text <- " REMIND ME TO GO FOR "
+        prompt.Text <- " REMIND ME TO " //" REMIND ME TO GO FOR "
         prompt.BackgroundColor <- this.highlightColor
 
         let dismiss = new UIButton()
@@ -161,7 +161,7 @@ type NewItemViewController =
             topic.Text <- qItem.Topic.ToUpper()
             topic.BackgroundColor <- NewItemViewController.topicColor
 
-            let at = new StyledLabel(Settings.StyledFontNameBold, 20, Text = "at")
+            let at = new StyledLabel(Settings.StyledFontNameBold, 20, Text = "@")
 
             let maxLength = 20
             let counter = new StyledLabel(Settings.StyledFontNameBold, 24)
