@@ -19,6 +19,7 @@ module QLogic =
 
     type Topic =
         | Activity of ActivityTopic
+        | Contact of int
         | Other of string
 
     let Topics =

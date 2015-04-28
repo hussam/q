@@ -14,6 +14,7 @@ open Xamarin
 
 open Utilites
 open qlib
+open qlib.QLogic
 
 type QueueCell = 
     inherit SwipeableViewCell
@@ -47,45 +48,50 @@ type QueueViewSource(_vc : UITableViewController,  tableView : UITableView) =
 
     let itemAt (indexPath : NSIndexPath) = queues.[indexPath.Section].[indexPath.Row]
 
+    let classify (item : QItem) =
+        match item.Topic with
+        | "Contact" ->
+            match Int32.TryParse(item.InternalDetails) with
+            | (true, id) when id > -1 -> Contact id
+            | _ -> Other item.Topic
+        | _ -> Other item.Topic
+
     let tapAction (item : QItem) =
         if not item.Completed then
-            match item.Topic with
-            | "Contact" ->
-                match Int32.TryParse(item.InternalDetails) with
-                | (true, id) when id > -1 ->
-                    let ab, _ = ABAddressBook.Create()
-                    let person = ab.GetPerson( id )
-                    let name = person.FirstName + " " + person.LastName
-                    let alert = UIAlertController.Create("Choose Contact Method", name, UIAlertControllerStyle.ActionSheet)
+            match classify item with
+            | Contact id ->
+                let ab, _ = ABAddressBook.Create()
+                let person = ab.GetPerson( id )
+                let name = person.FirstName + " " + person.LastName
+                let alert = UIAlertController.Create("Choose Contact Method", name, UIAlertControllerStyle.ActionSheet)
 
-                    let numbers = person.GetPhones()
-                    if int numbers.Count > 0 then
-                        let regex = new Regex(@"[^\d]")
-                        numbers.GetValues() |> Array.iter (fun n ->
-                            alert.AddAction( UIAlertAction.Create("Call: " + n, UIAlertActionStyle.Default, Action<_> (fun action ->
-                                UIApplication.SharedApplication.OpenUrl(NSUrl.FromString("tel:" + regex.Replace(n, ""))) |> ignore
-                                ) ) )
-                            alert.AddAction( UIAlertAction.Create("Text: " + n, UIAlertActionStyle.Default, Action<_> (fun action ->
-                                UIApplication.SharedApplication.OpenUrl(NSUrl.FromString("sms:" + regex.Replace(n, ""))) |> ignore
-                                ) ) )
-                            )
+                let numbers = person.GetPhones()
+                if int numbers.Count > 0 then
+                    let regex = new Regex(@"[^\d]")
+                    numbers.GetValues() |> Array.iter (fun n ->
+                        alert.AddAction( UIAlertAction.Create("Call: " + n, UIAlertActionStyle.Default, Action<_> (fun action ->
+                            UIApplication.SharedApplication.OpenUrl(NSUrl.FromString("tel:" + regex.Replace(n, ""))) |> ignore
+                            ) ) )
+                        alert.AddAction( UIAlertAction.Create("Text: " + n, UIAlertActionStyle.Default, Action<_> (fun action ->
+                            UIApplication.SharedApplication.OpenUrl(NSUrl.FromString("sms:" + regex.Replace(n, ""))) |> ignore
+                            ) ) )
+                        )
 
-                    let emails = person.GetEmails()
-                    if int emails.Count > 0 then
-                        emails.GetValues() |> Array.iter (fun e ->
-                            alert.AddAction( UIAlertAction.Create("Email: " + e, UIAlertActionStyle.Default, Action<_> (fun action ->
-                                if MFMailComposeViewController.CanSendMail then
-                                    let mc = new MFMailComposeViewController()
-                                    mc.SetToRecipients([| e |])
-                                    mc.SetSubject("Follow-up")
-                                    mc.Finished.Add(fun e -> e.Controller.DismissViewController(true, null))
-                                    vc.PresentViewController(mc, true, null)
-                                ) ) )
-                            )
+                let emails = person.GetEmails()
+                if int emails.Count > 0 then
+                    emails.GetValues() |> Array.iter (fun e ->
+                        alert.AddAction( UIAlertAction.Create("Email: " + e, UIAlertActionStyle.Default, Action<_> (fun action ->
+                            if MFMailComposeViewController.CanSendMail then
+                                let mc = new MFMailComposeViewController()
+                                mc.SetToRecipients([| e |])
+                                mc.SetSubject("Follow-up")
+                                mc.Finished.Add(fun e -> e.Controller.DismissViewController(true, null))
+                                vc.PresentViewController(mc, true, null)
+                            ) ) )
+                        )
 
-                    alert.AddAction( UIAlertAction.Create("Cancel", UIAlertActionStyle.Cancel, null) )
-                    vc.PresentViewController(alert, true, null)
-                | _ -> ()
+                alert.AddAction( UIAlertAction.Create("Cancel", UIAlertActionStyle.Cancel, null) )
+                vc.PresentViewController(alert, true, null)
             | _ -> ()
 
     override this.NumberOfSections(tableView) = nint queues.Length
@@ -108,8 +114,8 @@ type QueueViewSource(_vc : UITableViewController,  tableView : UITableView) =
         let frameWithWidth width = CGRectWithSize width 60.0
 
         if indexPath.Section = QLib.Uncompleted then
-            cell.Accessory <- match item.Topic with
-                              | "Contact" -> UITableViewCellAccessory.DetailButton
+            cell.Accessory <- match classify item with
+                              | Contact _ -> UITableViewCellAccessory.DetailButton
                               | _ -> UITableViewCellAccessory.None
             let completedActionView = new UILabel(frameWithWidth 100.0)
             completedActionView.Text <- "Completed"
