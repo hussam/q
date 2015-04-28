@@ -1,9 +1,13 @@
 ﻿namespace Q.iOS
 
 open System
+open System.Text.RegularExpressions
+
 open UIKit
 open Foundation
 open CoreGraphics
+open AddressBook
+open MessageUI
 
 open SwipeableViewCell
 open Xamarin
@@ -32,21 +36,71 @@ type QueueCell =
         this.DetailTextLabel.Hidden <- item.Topic = "OTHER"
 
 
-type QueueViewSource(tableView : UITableView) =
+type QueueViewSource(_vc : UITableViewController,  tableView : UITableView) =
     inherit UITableViewSource()
 
-    let tv = tableView
+    let vc = _vc
     let queues = QLib.AllQueues
 
     do
-        queues |> Array.iter (fun q -> q.CollectionChanged.Add(fun _ -> tv.ReloadData()))
+        queues |> Array.iter (fun q -> q.CollectionChanged.Add(fun _ -> tableView.ReloadData()))
+
+    let itemAt (indexPath : NSIndexPath) = queues.[indexPath.Section].[indexPath.Row]
+
+    let tapAction (item : QItem) =
+        if not item.Completed then
+            match item.Topic with
+            | "Contact" ->
+                match Int32.TryParse(item.InternalDetails) with
+                | (true, id) when id > -1 ->
+                    let ab, _ = ABAddressBook.Create()
+                    let person = ab.GetPerson( id )
+                    let name = person.FirstName + " " + person.LastName
+                    let alert = UIAlertController.Create("Choose Contact Method", name, UIAlertControllerStyle.ActionSheet)
+
+                    let numbers = person.GetPhones()
+                    if int numbers.Count > 0 then
+                        let regex = new Regex(@"[^\d]")
+                        numbers.GetValues() |> Array.iter (fun n ->
+                            alert.AddAction( UIAlertAction.Create("Call: " + n, UIAlertActionStyle.Default, Action<_> (fun action ->
+                                UIApplication.SharedApplication.OpenUrl(NSUrl.FromString("tel:" + regex.Replace(n, ""))) |> ignore
+                                ) ) )
+                            alert.AddAction( UIAlertAction.Create("Text: " + n, UIAlertActionStyle.Default, Action<_> (fun action ->
+                                UIApplication.SharedApplication.OpenUrl(NSUrl.FromString("sms:" + regex.Replace(n, ""))) |> ignore
+                                ) ) )
+                            )
+
+                    let emails = person.GetEmails()
+                    if int emails.Count > 0 then
+                        emails.GetValues() |> Array.iter (fun e ->
+                            alert.AddAction( UIAlertAction.Create("Email: " + e, UIAlertActionStyle.Default, Action<_> (fun action ->
+                                if MFMailComposeViewController.CanSendMail then
+                                    let mc = new MFMailComposeViewController()
+                                    mc.SetToRecipients([| e |])
+                                    mc.SetSubject("Follow-up")
+                                    mc.Finished.Add(fun e -> e.Controller.DismissViewController(true, null))
+                                    vc.PresentViewController(mc, true, null)
+                                ) ) )
+                            )
+
+                    alert.AddAction( UIAlertAction.Create("Cancel", UIAlertActionStyle.Cancel, null) )
+                    vc.PresentViewController(alert, true, null)
+                | _ -> ()
+            | _ -> ()
 
     override this.NumberOfSections(tableView) = nint queues.Length
     override this.RowsInSection(tableView, section) = nint queues.[int section].Count
     override this.TitleForHeader(tableView, section) = QLib.QueueNames.[int section]
 
+    override this.AccessoryButtonTapped(tableView, indexPath) =
+        tapAction (itemAt indexPath)
+
+    override this.RowSelected(tableView, indexPath) =
+        tableView.DeselectRow(indexPath, true)
+        tapAction (itemAt indexPath)
+
     override this.GetCell(tableView, indexPath) =
-        let item = queues.[indexPath.Section].[indexPath.Row]
+        let item = itemAt indexPath
         let cell = tableView.DequeueReusableCell (QueueCell.ReuseId, indexPath) :?> QueueCell
         cell.Bind(item)
 
@@ -54,6 +108,9 @@ type QueueViewSource(tableView : UITableView) =
         let frameWithWidth width = CGRectWithSize width 60.0
 
         if indexPath.Section = QLib.Uncompleted then
+            cell.Accessory <- match item.Topic with
+                              | "Contact" -> UITableViewCellAccessory.DetailButton
+                              | _ -> UITableViewCellAccessory.None
             let completedActionView = new UILabel(frameWithWidth 100.0)
             completedActionView.Text <- "Completed"
             completedActionView.TextColor <- UIColor.White
@@ -69,6 +126,7 @@ type QueueViewSource(tableView : UITableView) =
                     )
                 )
         else
+            cell.Accessory <- UITableViewCellAccessory.None
             let uncompletedAction = new UILabel(frameWithWidth 110.0)
             uncompletedAction.Text <- "Uncomplete"
             uncompletedAction.TextColor <- UIColor.White
@@ -118,5 +176,4 @@ type HomeViewController() as this =
         base.ViewDidLoad()
         let tv = this.TableView
         tv.RegisterClassForCellReuse(Operators.typeof<QueueCell>, QueueCell.ReuseId)
-        tv.Source <- new QueueViewSource(tv)
-        tv.AllowsSelection <- false
+        tv.Source <- new QueueViewSource(this, tv)

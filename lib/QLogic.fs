@@ -24,6 +24,7 @@ module QLogic =
     let Topics =
         let dict = new Dictionary<_,_>()
         dict.Add("Activity", unionCasesToStrArray typeof<ActivityTopic>)
+        dict.Add("Follow-up", [| "Contact" |])
         dict.Add("Other", [| "Other" |])
         dict
 

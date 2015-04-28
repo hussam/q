@@ -6,6 +6,9 @@ open UIKit
 open Foundation
 open CoreGraphics
 
+open AddressBook
+open AddressBookUI
+
 open Utilites
 open Praeclarum.AutoLayout
 
@@ -50,9 +53,10 @@ type TopicCell =
         |]
 
 
-type TopicsCollectionSource(onSelected) =
+type TopicsCollectionSource(_vc : UIViewController, onSelected) =
     inherit UICollectionViewSource()
 
+    let vc = _vc
     let topicCategories = QLib.Topics.Keys |> Array.ofSeq
     let topicItems = QLib.Topics.Values |> Array.ofSeq
     let itemSelected = new Event<_>()
@@ -61,7 +65,26 @@ type TopicsCollectionSource(onSelected) =
 
     override this.GetItemsCount(collectionView, section) = nint topicItems.[int section].Length
 
-    override this.ItemSelected(collectionView, indexPath) = onSelected(topicItems.[indexPath.Section].[indexPath.Row])
+    override this.ItemSelected(collectionView, indexPath) =
+        let topic = topicItems.[indexPath.Section].[indexPath.Row]
+        let qi = new QItem(Topic = topic)
+        match topicCategories.[indexPath.Section] with
+        | "Follow-up" ->
+            // XXX TODO: Display Alert about asking for access to addressbook. Handle case when user denies it.
+            let ab, _ = ABAddressBook.Create()
+            ab.RequestAccess(Action<bool, NSError> (fun granted errr ->
+                if granted then
+                    let contactPicker = new ABPeoplePickerNavigationController()
+                    contactPicker.Cancelled.Add(fun _ -> vc.DismissViewController(true, null))
+                    contactPicker.SelectPerson2.Add(fun e ->
+                        qi.Text <- e.Person.FirstName + " " + e.Person.LastName
+                        qi.InternalDetails <- e.Person.Id.ToString()
+                        onSelected(qi)
+                        )
+                    vc.PresentViewController(contactPicker, true, null)
+                ) )
+        | _ ->
+            onSelected(qi)
 
     override this.GetViewForSupplementaryElement(collectionView, elementKind, indexPath) =
         let header = collectionView.DequeueReusableSupplementaryView(elementKind, TopicHeader.ReuseId, indexPath) :?> TopicHeader
@@ -131,11 +154,11 @@ type NewItemViewController =
 
         let topicsGrid = new TopicsCollectionView()
         topicsGrid.TranslatesAutoresizingMaskIntoConstraints <- false
-        topicsGrid.Source <- new TopicsCollectionSource(fun selectedTitle ->
+        topicsGrid.Source <- new TopicsCollectionSource(this, fun qItem ->
             topicsGrid.RemoveFromSuperview()
 
             let topic = new StyledLabel(Settings.StyledFontNameBoldItalic, 28)
-            topic.Text <- selectedTitle.ToUpper()
+            topic.Text <- qItem.Topic.ToUpper()
             topic.BackgroundColor <- NewItemViewController.topicColor
 
             let at = new StyledLabel(Settings.StyledFontNameBold, 20, Text = "at")
@@ -144,18 +167,18 @@ type NewItemViewController =
             let counter = new StyledLabel(Settings.StyledFontNameBold, 24)
             counter.Text <- maxLength.ToString()
 
-            let venue = new StyledTextField(24, this.highlightColor)
-            venue.Placeholder <- "...(optional)"
-            venue.AutocapitalizationType <- UITextAutocapitalizationType.AllCharacters
-            venue.ReturnKeyType <- UIReturnKeyType.Done
-            venue.BecomeFirstResponder() |> ignore
-            venue.ShouldChangeCharacters <- new UITextFieldChange(fun x range str ->
+            let details = new StyledTextField(24, this.highlightColor)
+            details.Placeholder <- "...(optional)"
+            details.AutocapitalizationType <- UITextAutocapitalizationType.AllCharacters
+            details.ReturnKeyType <- UIReturnKeyType.Done
+            details.BecomeFirstResponder() |> ignore
+            details.ShouldChangeCharacters <- new UITextFieldChange(fun x range str ->
                 // prevent crashing undo bug
-                if range.Length + range.Location > nint venue.Text.Length
+                if range.Length + range.Location > nint details.Text.Length
                 then
                     false
                 else
-                    let remainingCharacters = maxLength - (venue.Text.Length + str.Length - (int range.Length))   /// subtracting range length in case of replacement
+                    let remainingCharacters = maxLength - (details.Text.Length + str.Length - (int range.Length))   /// subtracting range length in case of replacement
                     if remainingCharacters < 0
                     then
                         false
@@ -171,6 +194,9 @@ type NewItemViewController =
                         counter.Text <- remainingCharacters.ToString()
                         true
                 )
+            match qItem.Text with
+            | null -> ()
+            | text -> details.Text <- text
 
 
             let save = new UIButton()
@@ -181,15 +207,16 @@ type NewItemViewController =
             save.BackgroundColor <- this.highlightColor
             save.TranslatesAutoresizingMaskIntoConstraints <- false
             save.TouchUpInside.Add(fun _ ->
-                QLib.SaveItem(new QItem(Text = venue.Text, Topic = topic.Text)) |> ignore
+                qItem.Text <- details.Text
+                QLib.SaveItem(qItem) |> ignore
                 Xamarin.Insights.Track("CreatedTask", "topic", topic.Text)
-                venue.ResignFirstResponder() |> ignore
+                details.ResignFirstResponder() |> ignore
                 this.DismissViewController(true, null)
                 )
 
             view.AddSubview(topic)
             view.AddSubview(at)
-            view.AddSubview(venue)
+            view.AddSubview(details)
             view.AddSubview(counter)
             view.AddSubview(save)
 
@@ -197,13 +224,13 @@ type NewItemViewController =
                 topic.LayoutLeft == view.LayoutLeft + nfloat 10.0
                 topic.LayoutTop == prompt.LayoutBottom + nfloat 10.0
                 at.LayoutLeft == topic.LayoutLeft + nfloat 10.0
-                at.LayoutCenterY == venue.LayoutCenterY
-                venue.LayoutTop == topic.LayoutBottom + nfloat 5.0
-                venue.LayoutLeft == at.LayoutRight + nfloat 10.0
+                at.LayoutCenterY == details.LayoutCenterY
+                details.LayoutTop == topic.LayoutBottom + nfloat 5.0
+                details.LayoutLeft == at.LayoutRight + nfloat 10.0
                 counter.LayoutRight == view.LayoutRight
-                counter.LayoutCenterY == venue.LayoutCenterY
-                venue.LayoutRight == counter.LayoutLeft - nfloat 5.0
-                save.LayoutTop == venue.LayoutBottom + nfloat 100.0
+                counter.LayoutCenterY == details.LayoutCenterY
+                details.LayoutRight == counter.LayoutLeft - nfloat 5.0
+                save.LayoutTop == details.LayoutBottom + nfloat 100.0
                 save.LayoutRight == view.LayoutRight
                 save.LayoutLeft == view.LayoutRight - saveBtnWidth
             |]

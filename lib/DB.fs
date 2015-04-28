@@ -20,6 +20,7 @@ type QItem() =
     member val Topic : string = null with get, set
     member val Schedule : DateTime = new DateTime(1,1,1) with get, set
     member val Completed : bool = false with get, set
+    member val InternalDetails : string = null with get, set
 
 
 type QItemDB(path) =
