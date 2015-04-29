@@ -7,7 +7,7 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>CFBundleDisplayName</key>
-	<string>Queue: Smart Todo List</string>
+	<string>Queue</string>
 	<key>CFBundleIdentifier</key>
 	<string>io.imminent.q</string>
 	<key>CFBundleShortVersionString</key>
