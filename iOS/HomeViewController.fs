@@ -125,7 +125,7 @@ type QueueViewSource(_vc : UITableViewController,  tableView : UITableView) =
                 completedActionView,
                 UIColor.QGreen,
                 SwipeTableCellMode.Exit,
-                SwipeTableViewCellState.StateLeftShort,
+                SwipeTableViewCellState.StateRightShort,
                 new SwipeCompletionBlock(fun view state mode ->
                     QLib.MarkItemAsCompleted(item)
                     Insights.Track("CompletedTask", "topic", item.Topic)
@@ -141,7 +141,7 @@ type QueueViewSource(_vc : UITableViewController,  tableView : UITableView) =
                 uncompletedAction,
                 UIColor.QBlue,
                 SwipeTableCellMode.Exit,
-                SwipeTableViewCellState.StateRightShort,
+                SwipeTableViewCellState.StateLeftShort,
                 new SwipeCompletionBlock(fun view state mode ->
                     QLib.MarkItemAsUncompleted(item)
                     Insights.Track("UnCompletedTask", "topic", item.Topic)
