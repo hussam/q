@@ -75,13 +75,14 @@ type TopicsCollectionSource(_vc : UIViewController, onSelected) =
             ab.RequestAccess(Action<bool, NSError> (fun granted errr ->
                 if granted then
                     let contactPicker = new ABPeoplePickerNavigationController()
-                    contactPicker.Cancelled.Add(fun _ -> vc.DismissViewController(true, null))
-                    contactPicker.SelectPerson2.Add(fun e ->
-                        qi.Text <- e.Person.FirstName + " " + e.Person.LastName
-                        qi.InternalDetails <- e.Person.Id.ToString()
-                        onSelected(qi)
-                        )
-                    vc.PresentViewController(contactPicker, true, null)
+                    this.InvokeOnMainThread(fun () ->
+                        contactPicker.SelectPerson2.Add(fun e ->
+                            qi.Text <- e.Person.FirstName + " " + e.Person.LastName
+                            qi.InternalDetails <- e.Person.Id.ToString()
+                            onSelected(qi)
+                            )
+                        vc.PresentViewController(contactPicker, true, null)
+                    )
                 ) )
         | _ ->
             onSelected(qi)
