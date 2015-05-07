@@ -12,6 +12,7 @@ open Utils
 type DBItem() = 
     [<PrimaryKey; AutoIncrement>]
     member val LocalId :int = 0 with get, set
+    member val Id : string = null with get, set
 
 [<AllowNullLiteral>]
 type QItem() =

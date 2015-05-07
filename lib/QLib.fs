@@ -27,6 +27,7 @@ type QLib private () =
                 isLoaded <- true
 
     static member Init(dbPath) =
+        Backend.Init()
         let db = new QItemDB(Path.Combine(dbPath, "q.sqlite"))
         db.CreateTable().Wait()
         qdb <- Some db
@@ -44,6 +45,7 @@ type QLib private () =
         | None -> ()
         | Some db ->
             db.SaveItem(item) |> ignore
+            Backend.SaveItem(item) |> ignore
             queues.[0].Add(item)
 
     static member MarkItemAsCompleted item =
