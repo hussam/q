@@ -1,16 +1,9 @@
 module Praeclarum.AutoLayout
 
 open System
-
-#if __IOS__
 open Foundation
 open UIKit
 type NativeView = UIView
-#else
-open MonoMac.Foundation
-open MonoMac.AppKit
-type NativeView = NSView
-#endif
 
 /// A first-class value representing a layout attribute on a view.
 /// Algebraic operations +, -, *, and / are supported to modify the attribute.
@@ -39,11 +32,7 @@ type LayoutAttributeReference =
     static member ( - ) (c : nfloat, r) = { r with M = -r.M; C = c - r.C }
     static member ( - ) (r, c : nfloat) = { r with C = r.C - c }
 
-#if __IOS__
 type UIView with
-#else
-type NSView with
-#endif
     member this.VerticalHuggingPriority 
         with get () : float32 = this.ContentHuggingPriority (UILayoutConstraintAxis.Vertical)
         and set v = this.SetContentHuggingPriority (v, UILayoutConstraintAxis.Vertical)
