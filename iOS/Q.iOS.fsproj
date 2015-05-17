@@ -124,7 +124,7 @@
     <Compile Include="Utilities.fs" />
     <Compile Include="Settings.fs" />
     <Compile Include="Controls.fs" />
-    <Compile Include="NewItemViewController.fs" />
+    <Compile Include="SimpleNewItemViewController.fs" />
     <Compile Include="HomeViewController.fs" />
     <Compile Include="AppDelegate.fs" />
   </ItemGroup>

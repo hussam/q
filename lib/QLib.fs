@@ -32,7 +32,6 @@ type QLib private () =
         db.CreateTable().Wait()
         qdb <- Some db
 
-    static member Topics = QLogic.Topics
     static member QueueNames = [| "" ; "Completed" |]
     static member AllQueues = (loadData() ; queues)
 
