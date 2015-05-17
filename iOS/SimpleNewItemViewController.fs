@@ -44,7 +44,7 @@ type SimpleNewItemViewController =
         dismiss.TouchUpInside.Add(fun _ -> this.View.EndEditing(true) |> ignore; this.DismissViewController(true, null) )
         dismiss.TranslatesAutoresizingMaskIntoConstraints <- false
 
-        let maxLength = 20
+        let maxLength = 40
         let counter = new StyledLabel(Settings.StyledFontNameBold, 24)
         counter.Text <- maxLength.ToString()
 
