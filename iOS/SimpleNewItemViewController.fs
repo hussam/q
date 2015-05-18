@@ -106,10 +106,10 @@ type SimpleNewItemViewController =
 
             details.LayoutTop == prompt.LayoutBottom + nfloat 10.0
             details.LayoutLeft == view.LayoutLeft + nfloat 10.0
-            details.LayoutRight == counter.LayoutLeft - nfloat 5.0
+            details.LayoutRight == view.LayoutRight - nfloat 10.0
 
+            counter.LayoutTop == details.LayoutBottom + nfloat 5.0
             counter.LayoutRight == view.LayoutRight
-            counter.LayoutCenterY == details.LayoutCenterY
 
             save.LayoutTop == details.LayoutBottom + nfloat 100.0
             save.LayoutRight == view.LayoutRight
