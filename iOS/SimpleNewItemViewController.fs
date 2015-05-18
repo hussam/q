@@ -50,7 +50,6 @@ type SimpleNewItemViewController =
 
         let details = new StyledTextField(24, this.highlightColor)
         details.Placeholder <- "..."
-        details.AutocapitalizationType <- UITextAutocapitalizationType.AllCharacters
         details.ReturnKeyType <- UIReturnKeyType.Done
         details.BecomeFirstResponder() |> ignore
         details.ShouldChangeCharacters <- new UITextFieldChange(fun x range str ->
