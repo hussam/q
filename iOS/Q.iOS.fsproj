@@ -128,6 +128,7 @@
     <Compile Include="Settings.fs" />
     <Compile Include="Controls.fs" />
     <Compile Include="SimpleNewItemViewController.fs" />
+    <Compile Include="TaskDetailsViewController.fs" />
     <Compile Include="TaskListViewController.fs" />
     <Compile Include="SettingsViewController.fs" />
     <Compile Include="SideNavViewController.fs" />

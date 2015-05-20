@@ -19,6 +19,8 @@ type QItem() =
     inherit DBItem()
     member val Text : string = null with get, set
     member val Completed : bool = false with get, set
+    member val CreatedOn : DateTime = DateTime.UtcNow with get, set
+    member val CompletedOn : DateTime = DateTime.MinValue with get, set
 
 
 type QItemDB(path) =

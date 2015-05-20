@@ -25,6 +25,9 @@ type UIColor with
     static member QGreen = UIColor.FromRGB(139, 197, 63)
     static member QLime = UIColor.FromRGB(214, 223, 35)
 
+    static member QHighlight = UIColor.FromRGB(255, 211, 0)
+
+
     member this.WithBrightness brightness =
         let h, s, _, a = this.GetHSBA ()
         UIColor.FromHSBA(h, s, brightness, a)

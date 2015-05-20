@@ -13,8 +13,6 @@ type SimpleNewItemViewController =
     inherit UIViewController
 
     static member private colors = [| UIColor.Aqua; UIColor.Blue; UIColor.Fuchsia; UIColor.MidGreen; UIColor.Lime; UIColor.Maroon; UIColor.Navy; UIColor.Olive; UIColor.Pink; UIColor.MidPurple; UIColor.Red; UIColor.Teal; UIColor.Yellow |]
-    //static member private colors = QColors
-    static member private topicColor = UIColor.FromRGB(255, 211, 0)
 
     val private highlightColor : UIColor
 

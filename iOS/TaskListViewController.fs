@@ -29,7 +29,7 @@ type QueueCell =
         this.TextLabel.Enabled <- not item.Completed
 
 
-type QueueViewSource(queueType, tableView : UITableView) =
+type QueueViewSource(queueType, tableView : UITableView, taskSelected) =
     inherit UITableViewSource()
 
     let tasks = QLib.GetTasks(queueType)
@@ -50,7 +50,8 @@ type QueueViewSource(queueType, tableView : UITableView) =
 
     override this.RowSelected(tableView, indexPath) =
         tableView.DeselectRow(indexPath, true)
-        tapAction (itemAt indexPath)
+        taskSelected(itemAt indexPath)
+
 
     override this.GetCell(tableView, indexPath) =
         let item = itemAt indexPath
@@ -135,4 +136,4 @@ type TaskListViewController(queueType) as this =
         base.ViewDidLoad()
         let tv = this.TableView
         tv.RegisterClassForCellReuse(Operators.typeof<QueueCell>, QueueCell.ReuseId)
-        tv.Source <- new QueueViewSource(queueType, tv)
+        tv.Source <- new QueueViewSource(queueType, tv, fun task -> this.NavigationController.PushViewController(new TaskDetailsViewController(task), true))

@@ -63,6 +63,7 @@ type QLib private () =
             queues.[Completed].Add(item)
             queues.[Uncompleted].Remove(item) |> ignore
             item.Completed <- true
+            item.CompletedOn <- DateTime.UtcNow
             db.UpdateItem(item) |> ignore
 
     static member MarkItemAsUncompleted item =
