@@ -33,7 +33,7 @@ type AppDelegate() =
 
         let root = new JASidePanelController()
         root.LeftPanel <- new SideNavViewController()
-        root.CenterPanel <- new UINavigationController( new TaskListViewController(TodayAgenda) )
+        root.CenterPanel <- new UINavigationController( new TaskListViewController(AllTasks) )
 
         this.Window.RootViewController <- root
         this.Window.MakeKeyAndVisible()
