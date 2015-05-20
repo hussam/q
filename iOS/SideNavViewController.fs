@@ -38,6 +38,7 @@ type SideNavViewSource(switchTo) =
     override this.GetCell(tableView, indexPath) =
         let cell = tableView.DequeueReusableCell (SideNavViewSource.CellReuseId, indexPath)
         cell.TextLabel.Text <- fst (itemAt indexPath)
+        cell.TextLabel.Font <- UIFont.FromName(Settings.StyledFontName, nfloat 18.0)
         cell.BackgroundColor <- UIColor.QBeige
         cell
 
