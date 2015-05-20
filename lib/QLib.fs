@@ -2,13 +2,16 @@
 
 open System
 open System.IO
+open System.Collections.Generic
 open System.Collections.ObjectModel
 
 exception QLibNotInitialized
 
+type QueueType = AllTasks | TodayAgenda | Completed | Uncompleted
+
 type QLib private () =
     static let mutable qdb : QItemDB Option = None
-    static let queues = Array.init 2 (fun _ -> null)
+    static let queues = new Dictionary<_,_>(HashIdentity.Structural)
 
     static let mutable isLoaded = false
 
@@ -19,11 +22,14 @@ type QLib private () =
             match qdb with
             | None -> raise QLibNotInitialized
             | Some db ->
-                let items = db.GetItems().Result    // this will block until items are loaded
-                let uncompleted, completed = items |> List.ofSeq |> List.partition (fun i -> i.Completed = false)
+                let allTasks = db.GetItems().Result |> List.ofSeq    // this will block until items are loaded
+                let uncompleted, completed = allTasks |> List.partition (fun i -> i.Completed = false)
 
-                queues.[0] <- new ObservableCollection<_>(uncompleted)
-                queues.[1] <- new ObservableCollection<_>(completed)
+                queues.Add(AllTasks, new ObservableCollection<_>(allTasks))
+                queues.Add(Uncompleted, new ObservableCollection<_>(uncompleted))
+                queues.Add(Completed, new ObservableCollection<_>(completed))
+                queues.Add(TodayAgenda, new ObservableCollection<_>())
+
                 isLoaded <- true
 
     static member Init(dbPath) =
@@ -33,10 +39,11 @@ type QLib private () =
         qdb <- Some db
 
     static member QueueNames = [| "" ; "Completed" |]
-    static member AllQueues = (loadData() ; queues)
 
     static member Uncompleted = 0
     static member Completed = 1
+
+    static member GetTasks(queueType) = (loadData(); queues.[queueType])
 
     static member SaveItem item =
         loadData()
@@ -45,27 +52,28 @@ type QLib private () =
         | Some db ->
             db.SaveItem(item) |> ignore
             //Backend.SaveItem(item) |> ignore
-            queues.[0].Add(item)
+            queues.[AllTasks].Add(item)
+            queues.[Uncompleted].Add(item)
 
     static member MarkItemAsCompleted item =
         loadData()
         match qdb with
         | None -> ()
         | Some db ->
-            queues.[0].Remove(item) |> ignore
+            queues.[Completed].Add(item)
+            queues.[Uncompleted].Remove(item) |> ignore
             item.Completed <- true
             db.UpdateItem(item) |> ignore
-            queues.[1].Add(item) |> ignore
 
     static member MarkItemAsUncompleted item =
         loadData()
         match qdb with
         | None -> ()
         | Some db ->
-            queues.[1].Remove(item) |> ignore
+            queues.[Completed].Remove(item) |> ignore
+            queues.[Uncompleted].Add(item)
             item.Completed <- false
             db.UpdateItem(item) |> ignore
-            queues.[0].Add(item) |> ignore
 
 
     #if false

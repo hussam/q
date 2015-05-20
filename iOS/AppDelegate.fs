@@ -6,6 +6,7 @@ open UIKit
 open Foundation
 
 open Xamarin
+open JASidePanels
 
 open qlib
 
@@ -29,7 +30,12 @@ type AppDelegate() =
     // This method is invoked when the application is ready to run.
     override this.FinishedLaunching(app, options) = 
         this.Window <- new UIWindow(UIScreen.MainScreen.Bounds)
-        this.Window.RootViewController <- new UINavigationController(new HomeViewController())
+
+        let root = new JASidePanelController()
+        root.LeftPanel <- new SideNavViewController()
+        root.CenterPanel <- new UINavigationController( new TaskListViewController(TodayAgenda) )
+
+        this.Window.RootViewController <- root
         this.Window.MakeKeyAndVisible()
         true
 

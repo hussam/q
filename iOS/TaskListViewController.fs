@@ -29,22 +29,21 @@ type QueueCell =
         this.TextLabel.Enabled <- not item.Completed
 
 
-type QueueViewSource(_vc : UITableViewController,  tableView : UITableView) =
+type QueueViewSource(queueType, tableView : UITableView) =
     inherit UITableViewSource()
 
-    let vc = _vc
-    let queues = QLib.AllQueues
+    let tasks = QLib.GetTasks(queueType)
 
     do
-        queues |> Array.iter (fun q -> q.CollectionChanged.Add(fun _ -> tableView.ReloadData()))
+        tasks.CollectionChanged.Add(fun _ -> tableView.ReloadData())
 
-    let itemAt (indexPath : NSIndexPath) = queues.[indexPath.Section].[indexPath.Row]
+    let itemAt (indexPath : NSIndexPath) = tasks.[indexPath.Row]
 
     let tapAction (item : QItem) = ()
 
-    override this.NumberOfSections(tableView) = nint queues.Length
-    override this.RowsInSection(tableView, section) = nint queues.[int section].Count
-    override this.TitleForHeader(tableView, section) = QLib.QueueNames.[int section]
+    //override this.NumberOfSections(tableView) = nint queues.Length
+    override this.RowsInSection(tableView, section) = nint tasks.Count
+    //override this.TitleForHeader(tableView, section) = QLib.QueueNames.[int section]
 
     override this.AccessoryButtonTapped(tableView, indexPath) =
         tapAction (itemAt indexPath)
@@ -61,7 +60,11 @@ type QueueViewSource(_vc : UITableViewController,  tableView : UITableView) =
         cell.CellSwipeGestureRecognizer.ShortTrigger <- nfloat 0.30
         let frameWithWidth width = CGRectWithSize width 60.0
 
-        if indexPath.Section = QLib.Uncompleted then
+        let swipeMode = match queueType with
+                        | AllTasks -> SwipeTableCellMode.Switch
+                        | _ -> SwipeTableCellMode.Exit
+
+        if item.Completed = false then
             let completedActionView = new UILabel(frameWithWidth 100.0)
             completedActionView.Text <- "Completed"
             completedActionView.TextColor <- UIColor.White
@@ -69,15 +72,15 @@ type QueueViewSource(_vc : UITableViewController,  tableView : UITableView) =
             cell.SetSwipeGestureWithView(
                 completedActionView,
                 UIColor.QGreen,
-                SwipeTableCellMode.Exit,
+                swipeMode,
                 SwipeTableViewCellState.StateRightShort,
                 new SwipeCompletionBlock(fun view state mode ->
                     QLib.MarkItemAsCompleted(item)
+                    cell.TextLabel.Enabled <- false
                     Insights.Track("CompletedTask")
                     )
                 )
         else
-            cell.Accessory <- UITableViewCellAccessory.None
             let uncompletedAction = new UILabel(frameWithWidth 110.0)
             uncompletedAction.Text <- "Uncomplete"
             uncompletedAction.TextColor <- UIColor.White
@@ -85,10 +88,11 @@ type QueueViewSource(_vc : UITableViewController,  tableView : UITableView) =
             cell.SetSwipeGestureWithView(
                 uncompletedAction,
                 UIColor.QBlue,
-                SwipeTableCellMode.Exit,
+                swipeMode,
                 SwipeTableViewCellState.StateLeftShort,
                 new SwipeCompletionBlock(fun view state mode ->
                     QLib.MarkItemAsUncompleted(item)
+                    cell.TextLabel.Enabled <- true
                     Insights.Track("UnCompletedTask")
                     )
                 )
@@ -113,10 +117,14 @@ type QueueViewSource(_vc : UITableViewController,  tableView : UITableView) =
         cell :> UITableViewCell
 
 
-type HomeViewController() as this = 
+type TaskListViewController(queueType) as this = 
     inherit UITableViewController(UITableViewStyle.Grouped)
     do
-        this.Title <- "My Queue"
+        this.Title <- match queueType with
+                      | AllTasks -> "All Tasks"
+                      | Completed -> "Completed"
+                      | TodayAgenda -> "Today's Agenda"
+                      | Uncompleted -> "Uncompleted"
         let addBtn = new UIBarButtonItem(UIBarButtonSystemItem.Add, fun sender eventArgs ->
             let c = new SimpleNewItemViewController()
             this.PresentViewController(c, true, null))
@@ -127,4 +135,4 @@ type HomeViewController() as this =
         base.ViewDidLoad()
         let tv = this.TableView
         tv.RegisterClassForCellReuse(Operators.typeof<QueueCell>, QueueCell.ReuseId)
-        tv.Source <- new QueueViewSource(this, tv)
+        tv.Source <- new QueueViewSource(queueType, tv)

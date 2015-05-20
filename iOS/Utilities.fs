@@ -17,7 +17,7 @@ type UIColor with
     static member MidGreen = UIColor.FromRGB(0, 128, 0)
     static member MidPurple = UIColor.FromRGB(128, 0, 128)
 
-
+    static member QBeige = UIColor.FromRGB(255, 253, 243)
     static member QBlue = UIColor.FromRGB(0, 173, 238)
     static member QYellow = UIColor.FromRGB(247, 223, 47)
     static member QSalmon = UIColor.FromRGB(239, 95, 55)
