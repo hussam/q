@@ -20,7 +20,6 @@ type QueueCell =
     new (style : UITableViewCellStyle, reuseId : string) =
         { inherit SwipeableViewCell(UITableViewCellStyle.Default, reuseId); item = null }
 
-
     static member ReuseId : string = "QueueCell"
 
     member this.Bind (item : QItem, swipeMode) =
@@ -87,25 +86,18 @@ type QueueViewSource(queueType, tableView : UITableView, taskSelected) =
     inherit UITableViewSource()
 
     let queues = QLib.GetTasks(queueType)
-
     do
         queues |> Array.iter (fun q -> q.CollectionChanged.Add(fun _ -> tableView.ReloadData()))
 
     let itemAt (indexPath : NSIndexPath) = queues.[indexPath.Section].[indexPath.Row]
 
-    let tapAction (item : QItem) = ()
-
     override this.NumberOfSections(tableView) = nint queues.Length
     override this.RowsInSection(tableView, section) = nint queues.[int section].Count
     override this.TitleForHeader(tableView, section) = QLib.QueueNames(queueType).[int section]
 
-    override this.AccessoryButtonTapped(tableView, indexPath) =
-        tapAction (itemAt indexPath)
-
     override this.RowSelected(tableView, indexPath) =
         tableView.DeselectRow(indexPath, true)
         taskSelected(itemAt indexPath)
-
 
     override this.GetCell(tableView, indexPath) =
         let item = itemAt indexPath

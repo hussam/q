@@ -25,7 +25,6 @@ type QLib private () =
                 let allTasks = db.GetItems().Result |> List.ofSeq    // this will block until items are loaded
                 let uncompleted, completed = allTasks |> List.partition (fun i -> i.Completed = false)
 
-                queues.Add(AllTasks, new ObservableCollection<_>(allTasks))
                 queues.Add(Uncompleted, new ObservableCollection<_>(uncompleted))
                 queues.Add(Completed, new ObservableCollection<_>(completed))
                 queues.Add(TodayAgenda, new ObservableCollection<_>())
@@ -42,9 +41,6 @@ type QLib private () =
         match queueType with
         | AllTasks -> [| "Uncompleted" ; "Completed" |]
         | _ -> [| "" |]
-
-    static member Uncompleted = 0
-    static member Completed = 1
 
     static member GetTasks(queueType) =
         loadData()
