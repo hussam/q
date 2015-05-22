@@ -38,12 +38,19 @@ type QLib private () =
         db.CreateTable().Wait()
         qdb <- Some db
 
-    static member QueueNames = [| "" ; "Completed" |]
+    static member QueueNames queueType =
+        match queueType with
+        | AllTasks -> [| "Uncompleted" ; "Completed" |]
+        | _ -> [| "" |]
 
     static member Uncompleted = 0
     static member Completed = 1
 
-    static member GetTasks(queueType) = (loadData(); queues.[queueType])
+    static member GetTasks(queueType) =
+        loadData()
+        match queueType with
+        | AllTasks -> [| queues.[Uncompleted] ; queues.[Completed] |]
+        | _ -> [| queues.[queueType] |]
 
     static member SaveItem item =
         loadData()
@@ -52,7 +59,6 @@ type QLib private () =
         | Some db ->
             db.SaveItem(item) |> ignore
             //Backend.SaveItem(item) |> ignore
-            queues.[AllTasks].Add(item)
             queues.[Uncompleted].Add(item)
 
     static member MarkItemAsCompleted item =

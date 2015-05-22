@@ -86,18 +86,18 @@ type QueueCell =
 type QueueViewSource(queueType, tableView : UITableView, taskSelected) =
     inherit UITableViewSource()
 
-    let tasks = QLib.GetTasks(queueType)
+    let queues = QLib.GetTasks(queueType)
 
     do
-        tasks.CollectionChanged.Add(fun _ -> tableView.ReloadData())
+        queues |> Array.iter (fun q -> q.CollectionChanged.Add(fun _ -> tableView.ReloadData()))
 
-    let itemAt (indexPath : NSIndexPath) = tasks.[indexPath.Row]
+    let itemAt (indexPath : NSIndexPath) = queues.[indexPath.Section].[indexPath.Row]
 
     let tapAction (item : QItem) = ()
 
-    //override this.NumberOfSections(tableView) = nint queues.Length
-    override this.RowsInSection(tableView, section) = nint tasks.Count
-    //override this.TitleForHeader(tableView, section) = QLib.QueueNames.[int section]
+    override this.NumberOfSections(tableView) = nint queues.Length
+    override this.RowsInSection(tableView, section) = nint queues.[int section].Count
+    override this.TitleForHeader(tableView, section) = QLib.QueueNames(queueType).[int section]
 
     override this.AccessoryButtonTapped(tableView, indexPath) =
         tapAction (itemAt indexPath)
