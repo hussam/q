@@ -78,6 +78,14 @@ type QLib private () =
             item.Completed <- false
             db.UpdateItem(item) |> ignore
 
+    static member DeleteItem item =
+        loadData()
+        match qdb with
+        | None -> ()
+        | Some db ->
+            for queue in queues.Values do
+                queue.Remove(item) |> ignore
+            db.DeleteItem(item) |> ignore
 
     #if false
     static member ScheduleItemForToday item =
@@ -102,12 +110,4 @@ type QLib private () =
             queues.[3].Add(item)
             item.Schedule <- new DateTime(1,1,1)
             db.UpdateItem(item) |> ignore
-
-    static member DeleteItem item =
-        loadData()
-        match qdb with
-        | None -> ()
-        | Some db ->
-            queues |> Array.iter (fun q -> q.Remove(item) |> ignore)
-            db.DeleteItem(item) |> ignore
     #endif

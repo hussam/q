@@ -42,7 +42,20 @@ type TaskDetailsViewController(task : QItem) as this =
             displayCompletionDate()
             )
 
-        view.AddSubviews(name, createdOn, completedOn, completedLbl, completed)
+        let delete = new UIButton()
+        let deleteBtnWidth = nfloat 160.0
+        delete.SetTitle("DELETE", UIControlState.Normal)
+        delete.SetTitleColor(UIColor.Black, UIControlState.Normal)
+        delete.Font <- UIFont.FromName(Settings.StyledFontNameBoldItalic, nfloat 24.0)
+        delete.BackgroundColor <- UIColor.QMagenta
+        delete.TranslatesAutoresizingMaskIntoConstraints <- false
+        delete.TouchUpInside.Add(fun _ ->
+            QLib.DeleteItem(task)
+            Xamarin.Insights.Track("DeletedTask")
+            this.NavigationController.PopViewController(true) |> ignore
+            )
+
+        view.AddSubviews(name, createdOn, completedOn, completedLbl, completed, delete)
         view.AddConstraints [|
                 name.LayoutTop == view.LayoutTop + nfloat 20.0
                 name.LayoutLeft == view.LayoutLeft + nfloat 10.0
@@ -57,4 +70,8 @@ type TaskDetailsViewController(task : QItem) as this =
                 completed.LayoutRight == createdOn.LayoutRight
                 completedLbl.LayoutCenterY == completed.LayoutCenterY
                 completedLbl.LayoutRight == completed.LayoutLeft - nfloat 5.0
+
+                delete.LayoutTop == completed.LayoutBottom + nfloat 100.0
+                delete.LayoutLeft == view.LayoutLeft
+                delete.LayoutRight == view.LayoutLeft + deleteBtnWidth
             |]
