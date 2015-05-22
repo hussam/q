@@ -16,8 +16,8 @@ type SideNavViewSource(switchTo) =
     let nav = [|
         ("Tasks", [|
             ("Today's Agenda", new TaskListViewController(TodayAgenda) :> UIViewController);
-            ("Uncompleted", new TaskListViewController(Uncompleted) :> UIViewController);
             ("All Tasks", new TaskListViewController(AllTasks) :> UIViewController);
+            ("Uncompleted", new TaskListViewController(Uncompleted) :> UIViewController);
             ("Completed", new TaskListViewController(Completed) :> UIViewController)
             |]);
         ("", [| ("Settings", new SettingsViewController()  :> UIViewController) |])
