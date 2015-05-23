@@ -46,17 +46,28 @@ type SimpleNewItemViewController =
         let counter = new StyledLabel(Settings.StyledFontNameBold, 24)
         counter.Text <- maxLength.ToString()
 
+        let saveBtn = new UIButton()
+        let saveBtnWidth = nfloat 160.0
+        saveBtn.SetTitle("SAVE IT!", UIControlState.Normal)
+        saveBtn.SetTitleColor(UIColor.Black, UIControlState.Normal)
+        saveBtn.Font <- UIFont.FromName(Settings.StyledFontNameBoldItalic, nfloat 24.0)
+        saveBtn.BackgroundColor <- this.highlightColor
+        saveBtn.TranslatesAutoresizingMaskIntoConstraints <- false
+        saveBtn.Enabled <- false
+
         let details = new StyledTextField(24, this.highlightColor)
         details.Placeholder <- "..."
         details.ReturnKeyType <- UIReturnKeyType.Done
         details.BecomeFirstResponder() |> ignore
-        details.ShouldChangeCharacters <- new UITextFieldChange(fun x range str ->
+        details.ShouldChangeCharacters <- new UITextFieldChange(fun textField range str ->
             // prevent crashing undo bug
-            if range.Length + range.Location > nint details.Text.Length
+            if range.Length + range.Location > nint textField.Text.Length
             then
                 false
             else
-                let remainingCharacters = maxLength - (details.Text.Length + str.Length - (int range.Length))   /// subtracting range length in case of replacement
+                let textLength = (textField.Text.Length + str.Length - (int range.Length))   /// subtracting range length in case of replacement
+                saveBtn.Enabled <- textLength > 0
+                let remainingCharacters = maxLength - textLength
                 if remainingCharacters < 0
                 then
                     false
@@ -73,26 +84,27 @@ type SimpleNewItemViewController =
                     true
             )
 
-        let save = new UIButton()
-        let saveBtnWidth = nfloat 160.0
-        save.SetTitle("SAVE IT!", UIControlState.Normal)
-        save.SetTitleColor(UIColor.Black, UIControlState.Normal)
-        save.Font <- UIFont.FromName(Settings.StyledFontNameBoldItalic, nfloat 24.0)
-        save.BackgroundColor <- this.highlightColor
-        save.TranslatesAutoresizingMaskIntoConstraints <- false
-        save.TouchUpInside.Add(fun _ ->
-            let qItem = new QItem(Text = details.Text)
+        let save itemText =
+            let qItem = new QItem(Text = itemText)
             QLib.SaveItem(qItem) |> ignore
             Xamarin.Insights.Track("CreatedTask")
             details.ResignFirstResponder() |> ignore
             this.DismissViewController(true, null)
-            )
+
+        saveBtn.TouchUpInside.Add(fun _ -> save details.Text)
+        details.ShouldReturn <- new UITextFieldCondition(fun textField ->
+            if (textField.Text <> null && textField.Text.Length > 0) then
+                save textField.Text
+                true
+            else
+                false
+        )
 
         view.AddSubview(prompt)
         view.AddSubview(dismiss)
         view.AddSubview(details)
         view.AddSubview(counter)
-        view.AddSubview(save)
+        view.AddSubview(saveBtn)
 
         view.AddConstraints [|
             prompt.LayoutTop == view.LayoutTop + nfloat 20.0
@@ -108,7 +120,7 @@ type SimpleNewItemViewController =
             counter.LayoutTop == details.LayoutBottom + nfloat 5.0
             counter.LayoutRight == view.LayoutRight
 
-            save.LayoutTop == details.LayoutBottom + nfloat 100.0
-            save.LayoutRight == view.LayoutRight
-            save.LayoutLeft == view.LayoutRight - saveBtnWidth
+            saveBtn.LayoutTop == details.LayoutBottom + nfloat 100.0
+            saveBtn.LayoutRight == view.LayoutRight
+            saveBtn.LayoutLeft == view.LayoutRight - saveBtnWidth
         |]
