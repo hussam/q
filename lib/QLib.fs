@@ -87,6 +87,9 @@ type QLib private () =
                 queue.Remove(item) |> ignore
             db.DeleteItem(item) |> ignore
 
+    static member Productivity =
+        60.0    // XXX: STUB
+
     #if false
     static member ScheduleItemForToday item =
         loadData()

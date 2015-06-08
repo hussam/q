@@ -111,6 +111,9 @@
     <Reference Include="JASidePanels">
       <HintPath>..\Components\jasidepanels-1.3.2.2\lib\ios-unified\JASidePanels.dll</HintPath>
     </Reference>
+    <Reference Include="AnimatedCharts">
+      <HintPath>..\References\AnimatedCharts.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\AppIcon%402x.png" />
