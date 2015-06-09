@@ -42,6 +42,12 @@ type TaskDetailsViewController(task : QItem) as this =
             displayCompletionDate()
             )
 
+        let notesLbl = new StyledLabel(Text = "Notes:")
+        let notes = new UITextView()
+        notes.TranslatesAutoresizingMaskIntoConstraints <- false
+        notes.Text <- task.Notes
+        notes.Editable <- false
+
         let delete = new UIButton()
         let deleteBtnWidth = nfloat 160.0
         delete.SetTitle("DELETE", UIControlState.Normal)
@@ -55,7 +61,7 @@ type TaskDetailsViewController(task : QItem) as this =
             this.NavigationController.PopViewController(true) |> ignore
             )
 
-        view.AddSubviews(name, createdOn, completedOn, completedLbl, completed, delete)
+        view.AddSubviews(name, createdOn, completedOn, completedLbl, completed, notesLbl, notes, delete)
         view.AddConstraints [|
                 name.LayoutTop == view.LayoutTop + nfloat 20.0
                 name.LayoutLeft == view.LayoutLeft + nfloat 10.0
@@ -71,7 +77,14 @@ type TaskDetailsViewController(task : QItem) as this =
                 completedLbl.LayoutCenterY == completed.LayoutCenterY
                 completedLbl.LayoutRight == completed.LayoutLeft - nfloat 5.0
 
-                delete.LayoutTop == completed.LayoutBottom + nfloat 100.0
+                notesLbl.LayoutLeft == name.LayoutLeft
+                notesLbl.LayoutTop == completed.LayoutBottom + nfloat 10.0
+                notes.LayoutTop == notesLbl.LayoutBottom + nfloat 5.0
+                notes.LayoutLeft == notesLbl.LayoutLeft
+                notes.LayoutRight == completed.LayoutRight
+                notes.LayoutBottom == delete.LayoutTop - nfloat 10.0
+
+                delete.LayoutTop == view.LayoutBottom - nfloat 150.0
                 delete.LayoutLeft == view.LayoutLeft
                 delete.LayoutRight == view.LayoutLeft + deleteBtnWidth
             |]

@@ -20,6 +20,7 @@ type QItem() =
     member val Completed : bool = false with get, set
     member val CreatedOn : DateTime = DateTime.UtcNow with get, set
     member val CompletedOn : DateTime = DateTime.MinValue with get, set
+    member val Notes : string = null with get, set
 
 
 type QItemDB(path) =
